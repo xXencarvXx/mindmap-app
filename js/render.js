@@ -111,6 +111,7 @@ export function render() {
       const lh = leafHeight(child);
       const cy = childY + (lh > LEAF_H ? lh / 2 : 0);
       const cel = createNode(child.id, childX, cy, "leaf");
+      cel.dataset.status = child.status || "";
 
       const hasKids = child.children && child.children.length > 0;
       let label = `<span class="status-dot ${child.status}"></span>${child.title}`;
@@ -206,6 +207,7 @@ export function render() {
   // ── PASS 2: Measure actual node sizes and draw SVG edges ──
   requestAnimationFrame(() => {
     drawEdges();
+    if (window._postRender) window._postRender();
   });
 
   // Set canvas size

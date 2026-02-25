@@ -110,11 +110,26 @@ function updateTransform() {
 }
 
 export function resetView() {
-  state.scale = 0.85;
-  const cx = canvas._cx || 1500;
-  const cy = canvas._cy || 500;
-  state.panX = window.innerWidth / 2 - cx * state.scale;
-  state.panY = window.innerHeight / 2 - cy * state.scale;
+  const entries = Object.values(_nodeElements);
+  if (entries.length === 0) { state.scale = 0.85; updateTransform(); return; }
+  const xs = entries.map(n => n.cx);
+  const ys = entries.map(n => n.cy);
+  const pad = 80;
+  const minX = Math.min(...xs) - pad;
+  const maxX = Math.max(...xs) + pad;
+  const minY = Math.min(...ys) - pad;
+  const maxY = Math.max(...ys) + pad;
+  const contentW = maxX - minX;
+  const contentH = maxY - minY;
+  const topMargin = 68;
+  const bottomMargin = 100;
+  const viewW = window.innerWidth;
+  const viewH = window.innerHeight - topMargin - bottomMargin;
+  state.scale = Math.min(1, viewW / contentW, viewH / contentH);
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+  state.panX = viewW / 2 - midX * state.scale;
+  state.panY = topMargin + viewH / 2 - midY * state.scale;
   updateTransform();
 }
 
@@ -149,7 +164,7 @@ export function resetPositions() {
 wrapper.addEventListener("wheel", (e) => {
   e.preventDefault();
   const oldScale = state.scale;
-  const delta = e.deltaY > 0 ? 0.92 : 1.08;
+  const delta = e.deltaY > 0 ? 0.98 : 1.02;
   state.scale = Math.max(0.2, Math.min(2, state.scale * delta));
   state.panX = e.clientX - (e.clientX - state.panX) * (state.scale / oldScale);
   state.panY = e.clientY - (e.clientY - state.panY) * (state.scale / oldScale);
@@ -186,16 +201,29 @@ wrapper.addEventListener("click", (e) => {
 // ──────────────────────────────────────────────
 // KEYBOARD SHORTCUTS
 // ──────────────────────────────────────────────
-export function initKeyboard(popUndoFn, onZoomChange) {
+export function panToNode(cx, cy) {
+  state.scale = 1;
+  state.panX = window.innerWidth / 2 - cx * state.scale;
+  state.panY = window.innerHeight / 2 - cy * state.scale;
+  updateTransform();
+}
+
+export function initKeyboard(popUndoFn, onZoomChange, openSearchFn, togglePresenterFn) {
   document.addEventListener("keydown", (e) => {
     const inField = e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.isContentEditable;
     if (e.key === "Escape") { if (inField) e.target.blur(); else closePanel(); }
+    if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      if (openSearchFn) openSearchFn();
+      return;
+    }
     if (e.key === "z" && (e.metaKey || e.ctrlKey) && !e.shiftKey && !inField) {
       e.preventDefault();
       popUndoFn();
       return;
     }
     if (inField) return;
+    if (e.key === "f" || e.key === "F") { if (togglePresenterFn) togglePresenterFn(); }
     if (e.key === "+" || e.key === "=") { zoomIn(); if (onZoomChange) onZoomChange(); }
     if (e.key === "-") { zoomOut(); if (onZoomChange) onZoomChange(); }
     if (e.key === "0") { resetView(); if (onZoomChange) onZoomChange(); }
