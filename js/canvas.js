@@ -104,6 +104,9 @@ const wrapper = document.getElementById("canvas-wrapper");
 
 function updateTransform() {
   canvas.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.scale})`;
+  const gridSize = 24 * state.scale;
+  wrapper.style.backgroundSize = `${gridSize}px ${gridSize}px`;
+  wrapper.style.backgroundPosition = `${state.panX}px ${state.panY}px`;
 }
 
 export function resetView() {
