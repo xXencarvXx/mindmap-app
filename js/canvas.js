@@ -1,5 +1,5 @@
 import { PROJECTS } from './data.js';
-import { state, _nodeElements, positionOverrides } from './state.js';
+import { state, _nodeElements, positionOverrides, findNodeById } from './state.js';
 import { savePositionsToLocalStorage, showToast } from './persistence.js';
 import { render, redrawEdges } from './render.js';
 import { closePanel } from './modal.js';
@@ -10,9 +10,17 @@ import { closePanel } from './modal.js';
 const DRAG_THRESHOLD = 5;
 const canvas = document.getElementById("canvas");
 
-function getChildNodeIds(projectId) {
-  const project = PROJECTS.find(p => p.id === projectId);
-  return project ? project.children.map(c => c.id) : [];
+function getChildNodeIds(nodeId) {
+  const ids = [];
+  function collect(node) {
+    if (!node || !node.children) return;
+    for (const c of node.children) {
+      ids.push(c.id);
+      collect(c);
+    }
+  }
+  collect(findNodeById(nodeId));
+  return ids;
 }
 
 canvas.addEventListener("mousedown", (e) => {
