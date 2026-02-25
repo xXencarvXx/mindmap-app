@@ -1,0 +1,81 @@
+# Mind Map - Priorités
+
+Single-file interactive mind map (`index.html`) deployed to GitHub Pages.
+
+## Architecture
+
+- **Single HTML file** with embedded CSS + JS, no external dependencies (except Google Fonts)
+- **localStorage** for browser-side persistence, **DATA_VERSION** for cache invalidation
+- **GitHub Pages**: https://ayming-france.github.io/mindmap/
+- **Repo**: `ayming-france/mindmap` (public)
+
+## Rules
+
+### Node vs Checklist
+- **Node** = something your boss would ask "what's the status of X?"
+- **Checklist** = steps to complete a node
+- If a checklist item needs its own checklist, promote it to a sub-project node
+
+### 3-Level Structure
+```
+Center (Mes Priorités)
+  └── Project (no status dot, no status in modal)
+      └── Sub-project (has status pill, checklist, blockers, etc.)
+          └── Checklist items (flat, inside modal)
+```
+Projects are containers. Status lives on sub-projects only.
+
+### Phase Separators
+Checklist items starting with `──` render as section headers (uppercase, no checkbox, excluded from progress count).
+```js
+{ text: "── Phase 1 : Tri et nettoyage ──", done: false }
+```
+
+### Prerequisites vs Blockers
+- **Prerequisites** = dependencies on other nodes (sequencing, not problems). Blue info box under description. Node titles auto-link to their modal.
+- **Blockers** = external problems you can't control (people, tools, agencies). Red section via add-bar.
+
+### Auto-Status from Checklist
+When checking/unchecking checklist items, status auto-updates:
+- 0 checked = "Pas commencé"
+- Some checked = "En cours"
+- All checked = "Fait"
+- Has blockers = status unchanged (won't override "Bloqué")
+
+### DATA_VERSION
+Bump `DATA_VERSION` every time you change the source data. On refresh, if the file version is newer than localStorage, localStorage clears automatically. This replaces manual `localStorage.removeItem()`.
+
+## Data Model
+
+```js
+{
+  id: "string",
+  title: "string",
+  color: "#hex",           // project-level only
+  status: "done|in_progress|blocked|not_started",
+  description: "string",
+  prerequisites: "string", // optional, auto-links node titles
+  blockers: "string",
+  notes: "string",
+  checklist: [{ text: "string", done: bool }],
+  links: [{ url: "string", text: "string" }],
+  children: [/* sub-project objects */]  // project-level only
+}
+```
+
+## Deployment
+
+```bash
+# Copy to deploy repo and push
+cp ~/.claude/mindmap/index.html /tmp/mindmap-deploy/index.html
+cd /tmp/mindmap-deploy && git add . && git commit -m "update" && git push
+```
+
+## Key Technical Patterns
+
+- **Two-pass rendering**: Pass 1 creates DOM nodes, Pass 2 measures via `offsetWidth` and draws SVG cubic bezier connections
+- **Position overrides** in localStorage for drag positions, all cleared on collapse/expand
+- **Cached side assignments** (`_cachedSides`) prevent collapse from reshuffling which side projects are on
+- **Rich text editing** via `contenteditable` divs with `document.execCommand()`
+- **Link popover** as `position: fixed` centered modal on `document.body`
+- **Confirm dialog** styled (not browser `confirm()`), required when deleting sections with content
