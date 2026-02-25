@@ -470,6 +470,16 @@ export const PROJECTS = [
           { text: "Vérifier chiffres sur chaque page offre Coûts RH (3 pages)", done: false }
         ],
         links: []
+      },
+      {
+        id: "offer-launch-process",
+        title: "Procédure Lancement Offre",
+        status: "not_started",
+        description: "Définir le processus standard de lancement d'une offre sur le marché : étapes, règles, rôles, livrables et critères de validation. L'objectif est d'avoir une procédure reproductible pour chaque nouvelle offre.",
+        blockers: "",
+        notes: "",
+        checklist: [],
+        links: []
       }
     ]
   },
