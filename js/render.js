@@ -1,0 +1,214 @@
+import { PROJECTS, ROOT_LABEL } from './data.js';
+import { collapsedNodes, positionOverrides, _nodeElements, _edgeDefs, state } from './state.js';
+import { savePositionsToLocalStorage } from './persistence.js';
+
+// ──────────────────────────────────────────────
+// LAYOUT CONSTANTS
+// ──────────────────────────────────────────────
+const NODE_H = 40;
+const LEAF_H = 36;
+const GAP_Y = 28;
+const GAP_X_PROJECT = 200;
+const GAP_X_LEAF = 260;
+const PROJECT_GAP_Y = 40;
+
+function branchHeight(project) {
+  const children = collapsedNodes.has(project.id) ? [] : project.children;
+  const childCount = children.length;
+  if (childCount === 0) return NODE_H;
+  return NODE_H + 20 + childCount * (LEAF_H + GAP_Y) - GAP_Y;
+}
+
+function balanceSides(projects) {
+  if (!state._cachedSides) {
+    const fullHeights = projects.map(p => {
+      const childCount = p.children.length;
+      return childCount === 0 ? NODE_H : NODE_H + 20 + childCount * (LEAF_H + GAP_Y) - GAP_Y;
+    });
+    const indexed = projects.map((p, i) => ({ p, h: fullHeights[i] }));
+    indexed.sort((a, b) => b.h - a.h);
+    const leftIds = new Set(), rightIds = new Set();
+    let lH = 0, rH = 0;
+    for (const { p, h } of indexed) {
+      if (rH <= lH) { rightIds.add(p.id); rH += h + PROJECT_GAP_Y; }
+      else { leftIds.add(p.id); lH += h + PROJECT_GAP_Y; }
+    }
+    state._cachedSides = { leftIds, rightIds };
+  }
+
+  const left = [], right = [];
+  for (const p of projects) {
+    if (state._cachedSides.rightIds.has(p.id)) right.push(p);
+    else left.push(p);
+  }
+  const leftH = left.reduce((sum, p) => sum + branchHeight(p) + PROJECT_GAP_Y, 0);
+  const rightH = right.reduce((sum, p) => sum + branchHeight(p) + PROJECT_GAP_Y, 0);
+  return { left, right, leftH, rightH };
+}
+
+export function adjustColor(hex, amount) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+  const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+  return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+}
+
+// ──────────────────────────────────────────────
+// RENDERING (two-pass)
+// ──────────────────────────────────────────────
+const canvas = document.getElementById("canvas");
+
+// openPanel will be set by app.js to avoid circular dependency
+let _openPanelFn = null;
+export function setOpenPanelFn(fn) { _openPanelFn = fn; }
+
+export function render() {
+  const { left, right, leftH, rightH } = balanceSides(PROJECTS);
+  const maxH = Math.max(leftH, rightH);
+  const cx = 1500, cy = Math.max(500, maxH / 2 + 60);
+
+  canvas.innerHTML = '<svg class="connections"></svg>';
+
+  // Reset shared state
+  for (const key in _nodeElements) delete _nodeElements[key];
+  _edgeDefs.length = 0;
+
+  function createNode(id, x, y, type) {
+    if (positionOverrides[id]) { x = positionOverrides[id].x; y = positionOverrides[id].y; }
+    const el = document.createElement("div");
+    el.className = `node ${type}`;
+    el.dataset.id = id;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
+    el.style.transform = "translate(-50%, -50%)";
+    el._cx = x; el._cy = y;
+    return el;
+  }
+
+  // ── PASS 1: Create all node DOM elements ──
+
+  // Root node
+  const rootEl = createNode("root", cx, cy, "root");
+  rootEl.textContent = ROOT_LABEL;
+  canvas.appendChild(rootEl);
+  _nodeElements["root"] = { el: rootEl, side: null, cx: rootEl._cx, cy: rootEl._cy };
+
+  function renderSide(projects, side) {
+    const totalH = side === "right" ? rightH : leftH;
+    let yOffset = cy - totalH / 2;
+
+    for (const project of projects) {
+      const bh = branchHeight(project);
+      const py = yOffset + bh / 2;
+      const px = side === "right" ? cx + GAP_X_PROJECT : cx - GAP_X_PROJECT;
+
+      const el = createNode(project.id, px, py, "project");
+      el.style.background = `linear-gradient(135deg, ${project.color}, ${adjustColor(project.color, -15)})`;
+      el.innerHTML = project.title;
+
+      if (project.children.length > 0) {
+        const toggle = document.createElement("div");
+        toggle.className = "toggle-btn";
+        toggle.style.borderColor = project.color;
+        toggle.style.color = project.color;
+        const isCollapsed = collapsedNodes.has(project.id);
+        toggle.textContent = isCollapsed ? "+" : "\u2212";
+        toggle.style.top = "50%";
+        if (side === "right") {
+          toggle.style.right = "-12px";
+        } else {
+          toggle.style.left = "-12px";
+        }
+        toggle.style.transform = "translateY(-50%)";
+        toggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          collapsedNodes.has(project.id) ? collapsedNodes.delete(project.id) : collapsedNodes.add(project.id);
+          for (const key in positionOverrides) delete positionOverrides[key];
+          savePositionsToLocalStorage();
+          render();
+        });
+        el.appendChild(toggle);
+      }
+      el.addEventListener("click", () => _openPanelFn && _openPanelFn(project));
+      canvas.appendChild(el);
+      _nodeElements[project.id] = { el, side, cx: el._cx, cy: el._cy };
+      _edgeDefs.push({ fromId: "root", toId: project.id, color: project.color });
+
+      if (!collapsedNodes.has(project.id) && project.children.length > 0) {
+        let childY = yOffset + NODE_H + 10;
+        for (const child of project.children) {
+          const childX = side === "right" ? px + GAP_X_LEAF : px - GAP_X_LEAF;
+          const cel = createNode(child.id, childX, childY, "leaf");
+          cel.innerHTML = `<span class="status-dot ${child.status}"></span>${child.title}`;
+          cel.addEventListener("click", () => _openPanelFn && _openPanelFn(child));
+          canvas.appendChild(cel);
+          _nodeElements[child.id] = { el: cel, side, cx: cel._cx, cy: cel._cy, parentColor: project.color };
+          _edgeDefs.push({ fromId: project.id, toId: child.id, color: project.color });
+          childY += LEAF_H + GAP_Y;
+        }
+      }
+      yOffset += bh + PROJECT_GAP_Y;
+    }
+  }
+
+  renderSide(right, "right");
+  renderSide(left, "left");
+
+  // ── PASS 2: Measure actual node sizes and draw SVG edges ──
+  requestAnimationFrame(() => {
+    drawEdges();
+  });
+
+  // Set canvas size
+  const allX = Object.values(_nodeElements).map(n => n.cx);
+  const allY = Object.values(_nodeElements).map(n => n.cy);
+  canvas.style.width = (Math.max(...allX) + 400) + "px";
+  canvas.style.height = (Math.max(...allY) + 200) + "px";
+  canvas._cx = cx;
+  canvas._cy = cy;
+}
+
+// ──────────────────────────────────────────────
+// DRAW / REDRAW EDGES
+// ──────────────────────────────────────────────
+function drawEdges() {
+  const svgEl = canvas.querySelector("svg.connections");
+  if (!svgEl) return;
+  svgEl.innerHTML = "";
+
+  for (const edge of _edgeDefs) {
+    const fromInfo = _nodeElements[edge.fromId];
+    const toInfo = _nodeElements[edge.toId];
+    if (!fromInfo || !toInfo) continue;
+
+    const fromW = fromInfo.el.offsetWidth;
+    const toW = toInfo.el.offsetWidth;
+
+    let startX, startY, endX, endY;
+    if (toInfo.side === "right") {
+      startX = fromInfo.cx + fromW / 2; startY = fromInfo.cy;
+      endX = toInfo.cx - toW / 2; endY = toInfo.cy;
+    } else {
+      startX = fromInfo.cx - fromW / 2; startY = fromInfo.cy;
+      endX = toInfo.cx + toW / 2; endY = toInfo.cy;
+    }
+
+    const gap = Math.abs(endX - startX);
+    const dx = gap * 0.45;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    let d;
+    if (toInfo.side === "right") {
+      d = `M${startX},${startY} C${startX + dx},${startY} ${endX - dx},${endY} ${endX},${endY}`;
+    } else {
+      d = `M${startX},${startY} C${startX - dx},${startY} ${endX + dx},${endY} ${endX},${endY}`;
+    }
+    path.setAttribute("d", d);
+    path.setAttribute("stroke", edge.color);
+    svgEl.appendChild(path);
+  }
+}
+
+export function redrawEdges() {
+  drawEdges();
+}

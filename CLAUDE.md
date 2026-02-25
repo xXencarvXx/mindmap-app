@@ -1,13 +1,41 @@
 # Mind Map - Priorités
 
-Single-file interactive mind map (`index.html`) deployed to GitHub Pages.
+Interactive priority mind map deployed to GitHub Pages.
 
 ## Architecture
 
-- **Single HTML file** with embedded CSS + JS, no external dependencies (except Google Fonts)
+- **Modular structure**: HTML shell + separate CSS/JS files (ES modules, no build step)
 - **localStorage** for browser-side persistence, **DATA_VERSION** for cache invalidation
 - **GitHub Pages**: https://ayming-france.github.io/mindmap/
 - **Repo**: `ayming-france/mindmap` (public)
+
+### File Structure
+```
+index.html              ← HTML shell (< 60 lines)
+styles/
+  base.css              ← reset, layout, canvas, controls, legend, toast
+  nodes.css             ← node cards, status dots, toggle buttons
+  modal.css             ← detail panel, rich editor, checklist, links, popover
+  dark.css              ← dark mode overrides
+js/
+  data.js               ← PROJECTS array, ROOT_LABEL, STATUS_LABELS
+  state.js              ← shared state object, undo stack, findNodeById
+  persistence.js        ← localStorage save/load, export, dark mode
+  render.js             ← layout engine, two-pass rendering, edge drawing
+  modal.js              ← detail panel, checklist, links, rich editor, drag reorder
+  canvas.js             ← pan, zoom, node drag, keyboard shortcuts
+  app.js                ← init, wires modules together, exposes globals
+```
+
+### Module Dependency Graph
+```
+data.js ← state.js ← persistence.js
+                    ← render.js ← canvas.js
+                    ← modal.js  ← canvas.js
+                                ← app.js (wires everything)
+```
+`render.js` and `modal.js` avoid circular deps via `setOpenPanelFn()` callback.
+Inline `onclick` handlers in template strings use `window.*` globals set by `app.js`.
 
 ## Rules
 
@@ -66,9 +94,10 @@ Bump `DATA_VERSION` every time you change the source data. On refresh, if the fi
 ## Deployment
 
 ```bash
-# Copy to deploy repo and push
-cp ~/.claude/mindmap/index.html /tmp/mindmap-deploy/index.html
-cd /tmp/mindmap-deploy && git add . && git commit -m "update" && git push
+# Deploy to GitHub Pages (requires switching to ayming-france account)
+gh auth switch --user ayming-france
+git push deploy main
+gh auth switch --user xXencarvXx
 ```
 
 ## Key Technical Patterns
