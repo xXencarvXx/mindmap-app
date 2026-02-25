@@ -183,7 +183,7 @@ wrapper.addEventListener("click", (e) => {
 // ──────────────────────────────────────────────
 // KEYBOARD SHORTCUTS
 // ──────────────────────────────────────────────
-export function initKeyboard(popUndoFn) {
+export function initKeyboard(popUndoFn, onZoomChange) {
   document.addEventListener("keydown", (e) => {
     const inField = e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.isContentEditable;
     if (e.key === "Escape") { if (inField) e.target.blur(); else closePanel(); }
@@ -193,8 +193,8 @@ export function initKeyboard(popUndoFn) {
       return;
     }
     if (inField) return;
-    if (e.key === "+" || e.key === "=") zoomIn();
-    if (e.key === "-") zoomOut();
-    if (e.key === "0") resetView();
+    if (e.key === "+" || e.key === "=") { zoomIn(); if (onZoomChange) onZoomChange(); }
+    if (e.key === "-") { zoomOut(); if (onZoomChange) onZoomChange(); }
+    if (e.key === "0") { resetView(); if (onZoomChange) onZoomChange(); }
   });
 }

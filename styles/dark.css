@@ -1,6 +1,25 @@
 /* ── Dark Mode ── */
 body.dark { background: #0f172a; }
 
+/* Toolbar */
+body.dark #toolbar { background: #1e293b; border-bottom-color: #334155; }
+body.dark .toolbar-title { color: #e2e8f0; }
+body.dark .toolbar-right button { color: #94a3b8; }
+body.dark .toolbar-right button:hover { background: #334155; color: #e2e8f0; }
+body.dark .toolbar-sep { background: #334155; }
+
+/* Canvas dot grid */
+body.dark #canvas-wrapper {
+  background-image: radial-gradient(circle, #334155 1px, transparent 1px);
+}
+
+/* Zoom controls */
+body.dark #zoom-controls { background: #1e293b; border-color: #334155; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+body.dark #zoom-controls button { color: #94a3b8; }
+body.dark #zoom-controls button:hover { background: #334155; color: #e2e8f0; }
+body.dark #zoom-level { color: #94a3b8; }
+body.dark .zoom-sep { background: #334155; }
+
 /* Nodes */
 body.dark .node.leaf {
   background: #1e293b;
@@ -24,17 +43,6 @@ body.dark svg.connections path { opacity: 0.45; }
 /* Toggle button */
 body.dark .toggle-btn { background: #1e293b; }
 
-/* Controls */
-body.dark .ctrl-group {
-  background: #334155;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-body.dark .ctrl-group[data-label]::after { color: #64748b; }
-body.dark #controls button {
-  background: #1e293b;
-  color: #94a3b8;
-}
-body.dark #controls button:hover { background: #334155; color: #e2e8f0; }
 
 /* Legend */
 body.dark #legend {

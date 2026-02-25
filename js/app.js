@@ -71,12 +71,23 @@ window.popUndo = popUndo;
 // ──────────────────────────────────────────────
 document.getElementById("detail-overlay").addEventListener("click", closePanel);
 document.querySelector("#detail-panel .close-btn").addEventListener("click", closePanel);
-document.getElementById("btn-zoom-in").addEventListener("click", zoomIn);
-document.getElementById("btn-zoom-out").addEventListener("click", zoomOut);
-document.getElementById("btn-reset-view").addEventListener("click", resetView);
+document.getElementById("btn-zoom-in").addEventListener("click", () => { zoomIn(); updateZoomLabel(); });
+document.getElementById("btn-zoom-out").addEventListener("click", () => { zoomOut(); updateZoomLabel(); });
+document.getElementById("btn-reset-view").addEventListener("click", () => { resetView(); updateZoomLabel(); });
 document.getElementById("btn-export").addEventListener("click", exportJSON);
 document.getElementById("btn-reset-pos").addEventListener("click", resetPositions);
 document.getElementById("dark-toggle").addEventListener("click", toggleDarkMode);
+document.getElementById("btn-undo").addEventListener("click", popUndo);
+
+function updateZoomLabel() {
+  const el = document.getElementById("zoom-level");
+  if (el) el.textContent = Math.round(state.scale * 100) + "%";
+}
+
+// Update zoom label on wheel
+document.getElementById("canvas-wrapper").addEventListener("wheel", () => {
+  requestAnimationFrame(updateZoomLabel);
+}, { passive: true });
 
 // ──────────────────────────────────────────────
 // INIT
@@ -86,5 +97,6 @@ loadPositionsFromLocalStorage();
 loadDarkMode();
 render();
 resetView();
+updateZoomLabel();
 initChecklistDrag();
-initKeyboard(popUndo);
+initKeyboard(popUndo, updateZoomLabel);

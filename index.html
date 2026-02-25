@@ -11,6 +11,28 @@
 </head>
 <body>
 
+<div id="toolbar">
+  <div class="toolbar-left">
+    <span class="toolbar-logo">J</span>
+    <span class="toolbar-title">Jose's Dashboard</span>
+  </div>
+  <div class="toolbar-right">
+    <button id="btn-undo" title="Annuler (Ctrl+Z)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    </button>
+    <button id="btn-reset-pos" title="Reset positions">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+    <button id="btn-export" title="Exporter JSON">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
+    <div class="toolbar-sep"></div>
+    <button id="dark-toggle" title="Mode sombre">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</div>
+
 <div id="canvas-wrapper">
   <div id="canvas">
     <svg class="connections"></svg>
@@ -25,22 +47,19 @@
   <div id="panel-body"></div>
 </div>
 
-<div id="controls">
-  <div class="ctrl-group" data-label="Vue">
-    <button id="btn-zoom-in" title="Zoom +">+</button>
-    <button id="btn-zoom-out" title="Zoom −">−</button>
-    <button id="btn-reset-view" title="Recentrer">&#8962;</button>
-  </div>
-  <div class="ctrl-group" data-label="Actions">
-    <button id="btn-reset-pos" title="Reset positions">&#x21BA;</button>
-    <button id="btn-export" title="Exporter JSON">&#x2913;</button>
-  </div>
-  <div class="ctrl-group" data-label="">
-    <button id="dark-toggle" title="Mode sombre">&#x263D;</button>
-  </div>
+<div id="zoom-controls">
+  <button id="btn-zoom-out" title="Zoom -">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <span id="zoom-level">85%</span>
+  <button id="btn-zoom-in" title="Zoom +">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <div class="zoom-sep"></div>
+  <button id="btn-reset-view" title="Recentrer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+  </button>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <div id="legend">
   <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div> Fait</div>
@@ -48,6 +67,8 @@
   <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> Bloqué</div>
   <div class="legend-item"><div class="legend-dot" style="background:#9ca3af"></div> Pas commencé</div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script type="module" src="js/app.js"></script>
 </body>
