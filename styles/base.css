@@ -50,25 +50,53 @@ svg.connections path {
   bottom: 20px;
   left: 20px;
   display: flex;
-  gap: 6px;
+  gap: 4px;
   z-index: 50;
 }
 
+.ctrl-group {
+  display: flex;
+  gap: 1px;
+  background: #e2e8f0;
+  border-radius: 12px;
+  padding: 1px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: relative;
+  margin-right: 6px;
+}
+
+.ctrl-group[data-label]:not([data-label=""])::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 #controls button {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+  border: none;
   background: #fff;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
   transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
+
+.ctrl-group button:first-child { border-radius: 11px 0 0 11px; }
+.ctrl-group button:last-child { border-radius: 0 11px 11px 0; }
+.ctrl-group button:only-child { border-radius: 11px; }
 
 #controls button:hover { background: #f1f5f9; color: #1e293b; }
 

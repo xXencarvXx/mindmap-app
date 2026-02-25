@@ -25,11 +25,14 @@ body.dark svg.connections path { opacity: 0.45; }
 body.dark .toggle-btn { background: #1e293b; }
 
 /* Controls */
+body.dark .ctrl-group {
+  background: #334155;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+body.dark .ctrl-group[data-label]::after { color: #64748b; }
 body.dark #controls button {
   background: #1e293b;
-  border-color: #334155;
   color: #94a3b8;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 body.dark #controls button:hover { background: #334155; color: #e2e8f0; }
 

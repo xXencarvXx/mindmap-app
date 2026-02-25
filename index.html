@@ -26,13 +26,18 @@
 </div>
 
 <div id="controls">
-  <button id="btn-zoom-in" title="Zoom +">+</button>
-  <button id="btn-zoom-out" title="Zoom -">&minus;</button>
-  <button id="btn-reset-view" title="Recentrer">&#8962;</button>
-  <button id="btn-export" title="Exporter JSON" style="font-size:13px;">&#x2913;</button>
-  <button id="btn-reset-pos" title="Reset positions" style="font-size:11px;">&#x21BA;</button>
-  <button id="btn-undo" title="Annuler (⌘Z)" style="font-size:14px;">&#x21B6;</button>
-  <button id="dark-toggle" title="Mode sombre" style="font-size:15px;">&#x263D;</button>
+  <div class="ctrl-group" data-label="Vue">
+    <button id="btn-zoom-in" title="Zoom +">+</button>
+    <button id="btn-zoom-out" title="Zoom −">−</button>
+    <button id="btn-reset-view" title="Recentrer">&#8962;</button>
+  </div>
+  <div class="ctrl-group" data-label="Actions">
+    <button id="btn-reset-pos" title="Reset positions">&#x21BA;</button>
+    <button id="btn-export" title="Exporter JSON">&#x2913;</button>
+  </div>
+  <div class="ctrl-group" data-label="">
+    <button id="dark-toggle" title="Mode sombre">&#x263D;</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>

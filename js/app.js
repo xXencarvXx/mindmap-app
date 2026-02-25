@@ -76,7 +76,6 @@ document.getElementById("btn-zoom-out").addEventListener("click", zoomOut);
 document.getElementById("btn-reset-view").addEventListener("click", resetView);
 document.getElementById("btn-export").addEventListener("click", exportJSON);
 document.getElementById("btn-reset-pos").addEventListener("click", resetPositions);
-document.getElementById("btn-undo").addEventListener("click", popUndo);
 document.getElementById("dark-toggle").addEventListener("click", toggleDarkMode);
 
 // ──────────────────────────────────────────────
