@@ -1,6 +1,5 @@
 /* ── Dark Mode ── */
 body.dark { background: #0f172a; }
-body.dark #header { color: #475569; }
 
 /* Nodes */
 body.dark .node.leaf {
