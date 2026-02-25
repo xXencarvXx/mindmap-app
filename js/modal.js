@@ -176,10 +176,14 @@ function buildLinksHTML(links) {
     html += `<button class="delete-link" onclick="deleteLinkItem(${i})" title="Supprimer"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
     html += `</div>`;
   }
-  html += `<div class="links-add">`;
+  html += `<button class="links-add-toggle" onclick="toggleLinkForm()">`;
+  html += `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  html += ` Ajouter un lien</button>`;
+  html += `<div class="links-add" style="display:none;">`;
   html += `<input type="url" id="link-add-url" placeholder="https://...">`;
   html += `<input type="text" id="link-add-title" placeholder="Titre (optionnel)">`;
   html += `<button onclick="addLinkItem()">Ajouter</button>`;
+  html += `<button class="links-add-cancel" onclick="toggleLinkForm()" title="Annuler"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
   html += `</div>`;
   html += `</div>`;
   return html;
@@ -317,6 +321,19 @@ export function deleteLinkItem(idx) {
   openPanel(n);
 }
 
+export function toggleLinkForm() {
+  const form = document.querySelector(".links-add");
+  const btn = document.querySelector(".links-add-toggle");
+  if (!form) return;
+  const isHidden = form.style.display === "none";
+  form.style.display = isHidden ? "" : "none";
+  if (btn) btn.style.display = isHidden ? "none" : "";
+  if (isHidden) {
+    const urlInput = document.getElementById("link-add-url");
+    if (urlInput) urlInput.focus();
+  }
+}
+
 export function addLinkItem() {
   const urlInput = document.getElementById("link-add-url");
   const titleInput = document.getElementById("link-add-title");
@@ -431,11 +448,12 @@ export function initChecklistDrag() {
 export function promptAddSubproject() {
   const title = prompt("Nom du sous-projet :");
   if (!title || !title.trim()) return;
-  const project = PROJECTS.find(p => p.id === state.currentPanelNodeId);
-  if (!project) return;
+  const node = findNodeById(state.currentPanelNodeId);
+  if (!node) return;
   pushUndo();
+  if (!node.children) node.children = [];
   const id = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
-  project.children.push({
+  node.children.push({
     id: id + "-" + Date.now(),
     title: title.trim(),
     status: "not_started",
@@ -450,7 +468,7 @@ export function promptAddSubproject() {
   import('./persistence.js').then(m => m.savePositionsToLocalStorage());
   saveToLocalStorage();
   render();
-  openPanel(project);
+  openPanel(node);
 }
 
 // ──────────────────────────────────────────────
@@ -523,14 +541,19 @@ export function openPanel(node) {
     bodyHTML += `<div class="prerequisites-box">`;
     bodyHTML += `<svg class="prereq-icon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>`;
     let prereqHTML = escapeHtml(node.prerequisites);
-    for (const p of PROJECTS) {
-      const allNodes = [p, ...p.children];
-      for (const n of allNodes) {
-        if (n.id === node.id) continue;
-        const escaped = escapeHtml(n.title);
-        if (prereqHTML.includes(escaped)) {
-          prereqHTML = prereqHTML.replace(escaped, `<a class="prereq-link" href="#" onclick="event.preventDefault();openPanelById('${n.id}')">${escaped}</a>`);
-        }
+    function collectAllNodes(nodes) {
+      let all = [];
+      for (const n of nodes) {
+        all.push(n);
+        if (n.children) all = all.concat(collectAllNodes(n.children));
+      }
+      return all;
+    }
+    for (const n of collectAllNodes(PROJECTS)) {
+      if (n.id === node.id) continue;
+      const escaped = escapeHtml(n.title);
+      if (prereqHTML.includes(escaped)) {
+        prereqHTML = prereqHTML.replace(escaped, `<a class="prereq-link" href="#" onclick="event.preventDefault();openPanelById('${n.id}')">${escaped}</a>`);
       }
     }
     bodyHTML += `<span class="prereq-text" id="field-prerequisites">${prereqHTML}</span>`;
@@ -565,11 +588,14 @@ export function openPanel(node) {
   };
   bodyHTML += addBarHTML(addBarNode);
 
-  if (isProject) {
-    bodyHTML += `<div class="section-label" style="margin-top:20px;">Sous-projets${node.children.length > 0 ? " (" + node.children.length + ")" : ""}</div>`;
-    if (node.children.length > 0) {
+  const hasChildren = node.children && node.children.length > 0;
+  const canAddChildren = isProject || hasChildren;
+  if (canAddChildren) {
+    const kids = node.children || [];
+    bodyHTML += `<div class="section-label" style="margin-top:20px;">Sous-projets${kids.length > 0 ? " (" + kids.length + ")" : ""}</div>`;
+    if (kids.length > 0) {
       bodyHTML += `<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">`;
-      for (const child of node.children) {
+      for (const child of kids) {
         bodyHTML += `<div class="subproject-row" onclick="openPanelById('${child.id}')">`;
         bodyHTML += `<span class="status-dot ${child.status}"></span>`;
         bodyHTML += `<span>${escapeHtml(child.title)}</span>`;

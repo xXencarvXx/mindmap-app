@@ -44,14 +44,18 @@ Inline `onclick` handlers in template strings use `window.*` globals set by `app
 - **Checklist** = steps to complete a node
 - If a checklist item needs its own checklist, promote it to a sub-project node
 
-### 3-Level Structure
+### Recursive Nesting
 ```
 Center (Mes Priorités)
   └── Project (no status dot, no status in modal)
       └── Sub-project (has status pill, checklist, blockers, etc.)
-          └── Checklist items (flat, inside modal)
+          └── Sub-sub-project (same as sub-project, recursive)
+              └── ... (any depth)
+                  └── Checklist items (flat, inside modal)
 ```
-Projects are containers. Status lives on sub-projects only.
+Projects are containers. Status lives on sub-projects (any depth).
+Any node with `children` renders child nodes on the canvas with toggle (+/-) buttons.
+The `findNodeById`, `cloneProjects`, and render functions are all recursive.
 
 ### Phase Separators
 Checklist items starting with `──` render as section headers (uppercase, no checkbox, excluded from progress count).

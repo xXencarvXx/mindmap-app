@@ -203,6 +203,138 @@ export const PROJECTS = [
         notes: "",
         checklist: [],
         links: []
+      },
+      {
+        id: "geo",
+        title: "GEO / Visibilité IA",
+        status: "not_started",
+        description: "Optimiser la visibilité d'ayming.fr dans les moteurs de recherche IA (ChatGPT, Perplexity, Claude, Gemini). Audit réalisé : score actuel 35% (7/20 requêtes prospects). GPTBot et CCBot bloqués, llms.txt sans contexte, pas de schema Service/FAQ.",
+        blockers: "",
+        notes: "",
+        checklist: [],
+        links: [],
+        children: [
+          {
+            id: "geo-robots",
+            title: "robots.txt",
+            status: "done",
+            description: "Le robots.txt du site est basique (sitemap + disallows standard). Il manque une stratégie de crawl pour les bots IA (GPTBot, CCBot, ClaudeBot, PerplexityBot) et une gestion fine des sections autorisées/interdites.",
+            blockers: "",
+            notes: "Appliquer via Rank Math > General Settings > Edit robots.txt dans WordPress.",
+            checklist: [
+              { text: "Récupérer l'accès à Rank Math > Edit robots.txt", done: true },
+              { text: "Autoriser GPTBot (ChatGPT) sur le contenu public", done: true },
+              { text: "Autoriser CCBot (Common Crawl)", done: true },
+              { text: "Ajouter ClaudeBot explicitement", done: true },
+              { text: "Ajouter PerplexityBot explicitement", done: true },
+              { text: "Ajouter Bytespider (TikTok/Doubao) explicitement", done: true },
+              { text: "Garder Disallow sur wp-admin, wp-login, search, author, embed", done: true },
+              { text: "Appliquer dans Rank Math > General Settings > Edit robots.txt", done: true },
+              { text: "Tester dans ChatGPT/Perplexity si ayming.fr est cité (attendre 2-3 semaines)", done: false }
+            ],
+            links: [
+              { url: "https://ayming-france.github.io/mindmap/drafts/robots-txt-draft.md", text: "Contenu robots.txt appliqué" }
+            ]
+          },
+          {
+            id: "geo-llms",
+            title: "llms.txt",
+            status: "not_started",
+            description: "Réécrire llms.txt avec du contexte structuré. Actuellement c'est un dump de 300+ URLs d'articles généré par RankMath. Un LLM qui lit ce fichier ne sait toujours pas ce qu'Ayming fait ni vend.",
+            prerequisites: "robots.txt (les bots doivent pouvoir accéder au fichier)",
+            blockers: "",
+            notes: "",
+            checklist: [
+              { text: "Ajouter section About (description, date création, employés, pays)", done: false },
+              { text: "Ajouter section Services (4 verticales avec liens directs par offre)", done: false },
+              { text: "Ajouter proof points par verticale (nb clients, dossiers, € récupérés)", done: false },
+              { text: "Ajouter section Contact (formulaire, adresse)", done: false },
+              { text: "Garder la liste d'articles RankMath en dessous", done: false },
+              { text: "Configurer dans Rank Math > General Settings > LLMs.txt", done: false }
+            ],
+            links: [
+              { url: "https://ayming-france.github.io/mindmap/drafts/llms-txt-draft.md", text: "Draft llms.txt à appliquer" }
+            ]
+          },
+          {
+            id: "geo-schema",
+            title: "Schema Markup",
+            status: "not_started",
+            description: "Ajouter du schema JSON-LD structuré pour que les moteurs IA comprennent qu'Ayming vend des services. Actuellement toutes les pages (y compris les offres) sont typées Article. Il manque Service, FAQ, HowTo.",
+            blockers: "",
+            notes: "",
+            checklist: [
+              { text: "── Pages d'offres ──", done: false },
+              { text: "ProfessionalService sur /innovation/", done: false },
+              { text: "ProfessionalService sur /ressources-humaines/", done: false },
+              { text: "ProfessionalService sur /finance-taxes/", done: false },
+              { text: "ProfessionalService sur /performance-hospitaliere/", done: false },
+              { text: "── Articles ──", done: false },
+              { text: "FAQPage sur les articles questions/réponses", done: false },
+              { text: "HowTo sur les guides pratiques", done: false },
+              { text: "── Homepage ──", done: false },
+              { text: "Ajouter og:image", done: false },
+              { text: "Enrichir Organization schema avec les proof points", done: false }
+            ],
+            links: []
+          },
+          {
+            id: "geo-content",
+            title: "Contenu Direct-Answer",
+            status: "not_started",
+            description: "Créer du contenu qui répond directement aux questions des prospects. Les moteurs IA citent le contenu éducatif (guides, calculateurs), pas les pages commerciales. Ayming est absent sur les requêtes basiques (comment obtenir le CIR, calcul taux AT/MP, avantage en nature véhicule).",
+            blockers: "",
+            notes: "",
+            checklist: [
+              { text: "── AT/MP (score 60%, améliorer) ──", done: false },
+              { text: "Guide : calcul du taux AT/MP (requête saisonnière, absent)", done: false },
+              { text: "Guide : faute inexcusable employeur (intent juridique, absent)", done: false },
+              { text: "── CIR (score 40%, prioritaire) ──", done: false },
+              { text: "Guide : comment obtenir le CIR (requête basique n°1, absent)", done: false },
+              { text: "Guide : calcul montant CIR (Sogedev et F.initiatives dominent)", done: false },
+              { text: "Guide : sous-traitance et dépenses éligibles CIR", done: false },
+              { text: "── RH / Social (score 20%, critique) ──", done: false },
+              { text: "Simulateur : avantage en nature véhicule 2025 (post-réforme)", done: false },
+              { text: "Guide : audit charges sociales (petits cabinets dominent)", done: false },
+              { text: "── Financement (score 20%, critique) ──", done: false },
+              { text: "Page référence : cabinet conseil subventions (10 concurrents, pas Ayming)", done: false },
+              { text: "Guide : comment candidater France 2030", done: false }
+            ],
+            links: []
+          },
+          {
+            id: "geo-proof",
+            title: "Preuves Chiffrées",
+            status: "not_started",
+            description: "Publier des métriques client visibles et indexables. Leyton cite 4 000 clients, 3 500 dossiers, 99% validation. ABGI cite 2 milliards € générés. Ayming n'a aucun chiffre qui circule en ligne. Les moteurs IA ne peuvent pas différencier Ayming des autres.",
+            blockers: "",
+            notes: "",
+            checklist: [
+              { text: "Collecter les métriques internes (nb dossiers CIR, taux succès, € récupérés AT/MP)", done: false },
+              { text: "Publier sur les pages d'offres (pas dans un PDF gated)", done: false },
+              { text: "Intégrer dans le schema Organization JSON-LD", done: false },
+              { text: "Intégrer dans llms.txt section About", done: false },
+              { text: "Créer des cas clients chiffrés indexables (pas des témoignages vidéo)", done: false }
+            ],
+            links: []
+          },
+          {
+            id: "geo-redirects",
+            title: "Redirections 301",
+            status: "not_started",
+            description: "Les anciennes URLs (/nos-offres/, /rh-et-remuneration/, /financement-de-linnovation/) retournent 404. Tous les backlinks et données d'entraînement IA pointant vers ces URLs sont perdus.",
+            blockers: "",
+            notes: "",
+            checklist: [
+              { text: "301 : /nos-offres/ vers la nouvelle URL offres", done: false },
+              { text: "301 : /rh-et-remuneration/ vers /ressources-humaines/", done: false },
+              { text: "301 : /financement-de-linnovation/ vers /innovation/", done: false },
+              { text: "Auditer les autres 404 via Google Search Console", done: false },
+              { text: "Configurer via Rank Math > Redirections ou .htaccess", done: false }
+            ],
+            links: []
+          }
+        ]
       }
     ]
   },

@@ -2,7 +2,7 @@ import { PROJECTS } from './data.js';
 import { state, undoStack, findNodeById } from './state.js';
 import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, exportJSON, toggleDarkMode, showToast } from './persistence.js';
 import { render, setOpenPanelFn } from './render.js';
-import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
+import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
 import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard } from './canvas.js';
 
 // ──────────────────────────────────────────────
@@ -57,6 +57,7 @@ window.deleteChecklistItem = deleteChecklistItem;
 window.addChecklistItem = addChecklistItem;
 window.deleteLinkItem = deleteLinkItem;
 window.addLinkItem = addLinkItem;
+window.toggleLinkForm = toggleLinkForm;
 window.removeSection = removeSection;
 window.addSection = addSection;
 window.openPanelById = openPanelById;

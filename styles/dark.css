@@ -167,6 +167,8 @@ body.dark .links-add input:focus { border-color: #475569; }
 body.dark .links-add input::placeholder { color: #475569; }
 body.dark .links-add button { background: #2563eb; }
 body.dark .links-add button:hover { background: #1d4ed8; }
+body.dark .links-add-toggle { border-top-color: #1e293b; color: #64748b; }
+body.dark .links-add-toggle:hover { color: #60a5fa; background: #1e293b; }
 
 /* Add bar & sub-project buttons */
 body.dark .add-bar button {

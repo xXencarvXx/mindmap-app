@@ -12,19 +12,28 @@ const GAP_X_PROJECT = 200;
 const GAP_X_LEAF = 260;
 const PROJECT_GAP_Y = 40;
 
+function leafHeight(node) {
+  if (collapsedNodes.has(node.id) || !node.children || node.children.length === 0) return LEAF_H;
+  let h = LEAF_H + 10;
+  for (const child of node.children) {
+    h += leafHeight(child) + GAP_Y;
+  }
+  return h - GAP_Y;
+}
+
 function branchHeight(project) {
-  const children = collapsedNodes.has(project.id) ? [] : project.children;
-  const childCount = children.length;
-  if (childCount === 0) return NODE_H;
-  return NODE_H + 20 + childCount * (LEAF_H + GAP_Y) - GAP_Y;
+  const children = collapsedNodes.has(project.id) ? [] : (project.children || []);
+  if (children.length === 0) return NODE_H;
+  let h = NODE_H + 20;
+  for (const child of children) {
+    h += leafHeight(child) + GAP_Y;
+  }
+  return h - GAP_Y;
 }
 
 function balanceSides(projects) {
   if (!state._cachedSides) {
-    const fullHeights = projects.map(p => {
-      const childCount = p.children.length;
-      return childCount === 0 ? NODE_H : NODE_H + 20 + childCount * (LEAF_H + GAP_Y) - GAP_Y;
-    });
+    const fullHeights = projects.map(p => branchHeight(p));
     const indexed = projects.map((p, i) => ({ p, h: fullHeights[i] }));
     indexed.sort((a, b) => b.h - a.h);
     const leftIds = new Set(), rightIds = new Set();
@@ -94,6 +103,54 @@ export function render() {
   canvas.appendChild(rootEl);
   _nodeElements["root"] = { el: rootEl, side: null, cx: rootEl._cx, cy: rootEl._cy };
 
+  function renderChildren(children, parentId, parentX, startY, side, color, depth) {
+    const xStep = GAP_X_LEAF * Math.max(0.7, 1 - depth * 0.1);
+    let childY = startY;
+    for (const child of children) {
+      const childX = side === "right" ? parentX + xStep : parentX - xStep;
+      const lh = leafHeight(child);
+      const cy = childY + (lh > LEAF_H ? lh / 2 : 0);
+      const cel = createNode(child.id, childX, cy, "leaf");
+
+      const hasKids = child.children && child.children.length > 0;
+      let label = `<span class="status-dot ${child.status}"></span>${child.title}`;
+      if (hasKids) {
+        const toggle = document.createElement("div");
+        toggle.className = "toggle-btn";
+        toggle.style.borderColor = color;
+        toggle.style.color = color;
+        const isCollapsed = collapsedNodes.has(child.id);
+        toggle.textContent = isCollapsed ? "+" : "\u2212";
+        toggle.style.top = "50%";
+        if (side === "right") { toggle.style.right = "-12px"; }
+        else { toggle.style.left = "-12px"; }
+        toggle.style.transform = "translateY(-50%)";
+        toggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          collapsedNodes.has(child.id) ? collapsedNodes.delete(child.id) : collapsedNodes.add(child.id);
+          for (const key in positionOverrides) delete positionOverrides[key];
+          savePositionsToLocalStorage();
+          render();
+        });
+        cel.innerHTML = label;
+        cel.appendChild(toggle);
+      } else {
+        cel.innerHTML = label;
+      }
+
+      cel.addEventListener("click", () => _openPanelFn && _openPanelFn(child));
+      canvas.appendChild(cel);
+      _nodeElements[child.id] = { el: cel, side, cx: cel._cx, cy: cel._cy, parentColor: color };
+      _edgeDefs.push({ fromId: parentId, toId: child.id, color });
+
+      if (!collapsedNodes.has(child.id) && hasKids) {
+        renderChildren(child.children, child.id, childX, childY + LEAF_H + 10, side, color, depth + 1);
+      }
+
+      childY += lh + GAP_Y;
+    }
+  }
+
   function renderSide(projects, side) {
     const totalH = side === "right" ? rightH : leftH;
     let yOffset = cy - totalH / 2;
@@ -135,18 +192,9 @@ export function render() {
       _nodeElements[project.id] = { el, side, cx: el._cx, cy: el._cy };
       _edgeDefs.push({ fromId: "root", toId: project.id, color: project.color });
 
-      if (!collapsedNodes.has(project.id) && project.children.length > 0) {
+      if (!collapsedNodes.has(project.id) && project.children && project.children.length > 0) {
         let childY = yOffset + NODE_H + 10;
-        for (const child of project.children) {
-          const childX = side === "right" ? px + GAP_X_LEAF : px - GAP_X_LEAF;
-          const cel = createNode(child.id, childX, childY, "leaf");
-          cel.innerHTML = `<span class="status-dot ${child.status}"></span>${child.title}`;
-          cel.addEventListener("click", () => _openPanelFn && _openPanelFn(child));
-          canvas.appendChild(cel);
-          _nodeElements[child.id] = { el: cel, side, cx: cel._cx, cy: cel._cy, parentColor: project.color };
-          _edgeDefs.push({ fromId: project.id, toId: child.id, color: project.color });
-          childY += LEAF_H + GAP_Y;
-        }
+        renderChildren(project.children, project.id, px, childY, side, project.color, 1);
       }
       yOffset += bh + PROJECT_GAP_Y;
     }

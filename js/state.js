@@ -32,21 +32,21 @@ export const collapsedNodes = new Set();
 export const undoStack = [];
 export const MAX_UNDO = 20;
 
+function cloneNode(n) {
+  const clone = {
+    id: n.id, title: n.title, status: n.status,
+    description: n.description, prerequisites: n.prerequisites || "",
+    blockers: n.blockers, notes: n.notes || "",
+    checklist: (n.checklist || []).map(i => ({ ...i })),
+    links: (n.links || []).map(l => ({ ...l }))
+  };
+  if (n.color) clone.color = n.color;
+  if (n.children) clone.children = n.children.map(c => cloneNode(c));
+  return clone;
+}
+
 export function cloneProjects() {
-  return PROJECTS.map(p => ({
-    id: p.id, title: p.title, color: p.color, status: p.status,
-    description: p.description, prerequisites: p.prerequisites || "",
-    blockers: p.blockers, notes: p.notes || "",
-    checklist: (p.checklist || []).map(i => ({ ...i })),
-    links: (p.links || []).map(l => ({ ...l })),
-    children: p.children.map(c => ({
-      id: c.id, title: c.title, status: c.status,
-      description: c.description, prerequisites: c.prerequisites || "",
-      blockers: c.blockers, notes: c.notes || "",
-      checklist: (c.checklist || []).map(i => ({ ...i })),
-      links: (c.links || []).map(l => ({ ...l }))
-    }))
-  }));
+  return PROJECTS.map(p => cloneNode(p));
 }
 
 export function pushUndo() {
@@ -58,13 +58,17 @@ export function pushUndo() {
 // FIND NODE HELPER
 // ──────────────────────────────────────────────
 export function findNodeById(id) {
-  for (const p of PROJECTS) {
-    if (p.id === id) return p;
-    for (const c of p.children) {
-      if (c.id === id) return c;
+  function search(nodes) {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      if (n.children) {
+        const found = search(n.children);
+        if (found) return found;
+      }
     }
+    return null;
   }
-  return null;
+  return search(PROJECTS);
 }
 
 // ──────────────────────────────────────────────
