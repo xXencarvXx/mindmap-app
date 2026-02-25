@@ -284,46 +284,6 @@ export const PROJECTS = [
             links: []
           },
           {
-            id: "geo-content",
-            title: "Contenu Direct-Answer",
-            status: "not_started",
-            description: "Créer du contenu qui répond directement aux questions des prospects. Les moteurs IA citent le contenu éducatif (guides, calculateurs), pas les pages commerciales. Ayming est absent sur les requêtes basiques (comment obtenir le CIR, calcul taux AT/MP, avantage en nature véhicule).",
-            blockers: "",
-            notes: "",
-            checklist: [
-              { text: "── AT/MP (score 60%, améliorer) ──", done: false },
-              { text: "Guide : calcul du taux AT/MP (requête saisonnière, absent)", done: false },
-              { text: "Guide : faute inexcusable employeur (intent juridique, absent)", done: false },
-              { text: "── CIR (score 40%, prioritaire) ──", done: false },
-              { text: "Guide : comment obtenir le CIR (requête basique n°1, absent)", done: false },
-              { text: "Guide : calcul montant CIR (Sogedev et F.initiatives dominent)", done: false },
-              { text: "Guide : sous-traitance et dépenses éligibles CIR", done: false },
-              { text: "── RH / Social (score 20%, critique) ──", done: false },
-              { text: "Simulateur : avantage en nature véhicule 2025 (post-réforme)", done: false },
-              { text: "Guide : audit charges sociales (petits cabinets dominent)", done: false },
-              { text: "── Financement (score 20%, critique) ──", done: false },
-              { text: "Page référence : cabinet conseil subventions (10 concurrents, pas Ayming)", done: false },
-              { text: "Guide : comment candidater France 2030", done: false }
-            ],
-            links: []
-          },
-          {
-            id: "geo-proof",
-            title: "Preuves Chiffrées",
-            status: "not_started",
-            description: "Publier des métriques client visibles et indexables. Leyton cite 4 000 clients, 3 500 dossiers, 99% validation. ABGI cite 2 milliards € générés. Ayming n'a aucun chiffre qui circule en ligne. Les moteurs IA ne peuvent pas différencier Ayming des autres.",
-            blockers: "",
-            notes: "",
-            checklist: [
-              { text: "Collecter les métriques internes (nb dossiers CIR, taux succès, € récupérés AT/MP)", done: false },
-              { text: "Publier sur les pages d'offres (pas dans un PDF gated)", done: false },
-              { text: "Intégrer dans le schema Organization JSON-LD", done: false },
-              { text: "Intégrer dans llms.txt section About", done: false },
-              { text: "Créer des cas clients chiffrés indexables (pas des témoignages vidéo)", done: false }
-            ],
-            links: []
-          },
-          {
             id: "geo-redirects",
             title: "Redirections 301",
             status: "not_started",
@@ -475,6 +435,41 @@ export const PROJECTS = [
           { url: "https://ayming-france.github.io/questionnaires-de-maladie-professionnelle/", text: "Questionnaires MP" },
           { url: "https://ayming-france.github.io/recuperer-ij/", text: "Récupérer IJ" }
         ]
+      },
+      {
+        id: "metrics-validation",
+        title: "Métriques Pages Offres",
+        status: "not_started",
+        description: "Demande de Marion Constanza : vérifier que les chiffres affichés sur les pages famille et les pages offres individuelles sont corrects et à jour. Ces métriques alimentent aussi le llms.txt et le schema JSON-LD.",
+        blockers: "",
+        notes: "",
+        checklist: [
+          { text: "── Prévention (page famille) ──", done: false },
+          { text: "15 000+ visites planifiées/an", done: false },
+          { text: "250 000+ salariés suivis", done: false },
+          { text: "3 500+ DUERP mis à jour", done: false },
+          { text: "1 200+ diagnostics sécurité", done: false },
+          { text: "── AT/MP (page famille) ──", done: false },
+          { text: "35 000+ DAT/an", done: false },
+          { text: "500 000+ salariés suivis", done: false },
+          { text: "1 800 dossiers MP/an", done: false },
+          { text: "120 M€ d'économies cotisations", done: false },
+          { text: "── Arrêts de travail (page famille) ──", done: false },
+          { text: "45 000+ arrêts traités/an", done: false },
+          { text: "320 000+ salariés suivis", done: false },
+          { text: "18 M€ d'IJ récupérées", done: false },
+          { text: "12 500+ arrêts longue durée pilotés", done: false },
+          { text: "── Coûts RH (page famille) ──", done: false },
+          { text: "45 M€ d'économies", done: false },
+          { text: "850+ entreprises accompagnées", done: false },
+          { text: "320+ contrôles URSSAF gérés", done: false },
+          { text: "── Pages offres individuelles ──", done: false },
+          { text: "Vérifier chiffres sur chaque page offre Prévention (4 pages)", done: false },
+          { text: "Vérifier chiffres sur chaque page offre AT/MP (4 pages)", done: false },
+          { text: "Vérifier chiffres sur chaque page offre Arrêts (4 pages)", done: false },
+          { text: "Vérifier chiffres sur chaque page offre Coûts RH (3 pages)", done: false }
+        ],
+        links: []
       }
     ]
   },
