@@ -101,7 +101,6 @@ body {
 #canvas {
   position: absolute;
   transform-origin: 0 0;
-  will-change: transform;
 }
 
 svg.connections {
