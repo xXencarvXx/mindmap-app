@@ -1,3 +1,8 @@
+# cHTML - UTM link decoration (always)
+
+Décore les liens internes ayming.fr au clic pour propager UTMs et Ads IDs entre les pages.
+
+```html
 <script>
 (function () {
   var PARAMS = [
@@ -48,3 +53,4 @@
   }, true);
 })();
 </script>
+```

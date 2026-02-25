@@ -1,3 +1,8 @@
+# cHTML - UTM storage + URL restore + first referrer
+
+Moteur d'attribution UTM complet avec fallback 3 niveaux : URL → localStorage → bootstrap depuis referrer (LLM, organic, referral). Mis à jour avec deepseek, meta.ai, le-chat.mistral.ai.
+
+```html
 <script>
 (function () {
   // =========================
@@ -307,3 +312,4 @@
 
 })();
 </script>
+```

@@ -1,14 +1,10 @@
+# cHTML - No UTM Traffic Fallback
+
+Filet de sécurité pour Gravity Forms. Remplit les hidden fields source (90) et medium (91) depuis l'URL, ou force direct/none si rien n'existe. Réessaie toutes les 250ms pendant 30s (GF peut charger en retard).
+
+```html
 <script>
 (function () {
-  // ==========================================
-  // GF Fallback ultra simple (fields 90/91)
-  // - Only fills if empty
-  // - URL -> fields
-  // - If still empty -> direct/none
-  // - Retries until BOTH fields filled
-  // - Skips internal traffic (ga_internal=1 or WP admin bar)
-  // ==========================================
-
   // ---- Internal skip ----
   try {
     if (localStorage.getItem('ga_internal') === '1') return;
@@ -30,7 +26,6 @@
 
     el.value = value;
 
-    // Some plugins listen to input/change events
     try {
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -80,3 +75,4 @@
   }, 250);
 })();
 </script>
+```

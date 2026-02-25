@@ -34,10 +34,10 @@ export const PROJECTS = [
           { text: "cHTML - Ads identifiers storage + URL restore", done: true }
         ],
         links: [
-          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-link-decoration.js", text: "Tag : UTM link decoration" },
-          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-storage-restore.js", text: "Tag : UTM storage + restore (mis à jour)" },
-          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-no-utm-fallback.js", text: "Tag : No UTM Fallback" },
-          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-ads-id-storage-restore.js", text: "Tag : Ads ID storage + restore" }
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-link-decoration.md", text: "Tag : UTM link decoration" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-storage-restore.md", text: "Tag : UTM storage + restore (mis à jour)" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-no-utm-fallback.md", text: "Tag : No UTM Fallback" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-ads-id-storage-restore.md", text: "Tag : Ads ID storage + restore" }
         ]
       },
       {

@@ -1,3 +1,8 @@
+# cHTML - Ads identifiers storage + URL restore
+
+Stocke les click IDs publicitaires (gclid, fbclid, etc.) avec leur contexte UTM, et les restaure uniquement quand le contexte UTM existe. Ne restaure jamais les IDs seuls pour éviter les fausses conversions.
+
+```html
 <script>
 (function () {
   // ----------------------------
@@ -206,3 +211,4 @@
   }
 })();
 </script>
+```
