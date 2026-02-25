@@ -19,21 +19,26 @@ export const PROJECTS = [
       {
         id: "gtm-tags",
         title: "GTM Custom Tags",
-        status: "in_progress",
-        description: "Tags JavaScript custom dans GTM pour récupérer les UTMs et Ads IDs, et tracer les sources d'acquisition. Prérequis : configuration cookie banner (consentement requis pour les tags Ads).",
+        status: "done",
+        description: "Éliminer les leads sans source. 4 tags JS dans GTM forment une chaîne complète : capturer UTMs et Ads IDs à l'arrivée, les persister en localStorage (24h), les restaurer entre les pages, et bootstrapper automatiquement la source depuis le referrer (LLM, organic, referral) quand aucun UTM n'existe.",
         blockers: "",
         notes: "",
         checklist: [
           { text: "── Configuration ──", done: false },
           { text: "Cookie banner : consentement Ads IDs", done: true },
           { text: "── Tags UTM ──", done: false },
-          { text: "cHTML - UTM link decoration (always)", done: false },
-          { text: "cHTML - UTM storage + URL restore + first referrer", done: false },
-          { text: "cHTML - No UTM Traffic Fallback", done: false },
+          { text: "cHTML - UTM link decoration (always)", done: true },
+          { text: "cHTML - UTM storage + URL restore + first referrer", done: true },
+          { text: "cHTML - No UTM Traffic Fallback", done: true },
           { text: "── Tags Ads ──", done: false },
-          { text: "cHTML - Ads identifiers storage + URL restore", done: false }
+          { text: "cHTML - Ads identifiers storage + URL restore", done: true }
         ],
-        links: []
+        links: [
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-link-decoration.js", text: "Tag : UTM link decoration" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-utm-storage-restore.js", text: "Tag : UTM storage + restore (mis à jour)" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-no-utm-fallback.js", text: "Tag : No UTM Fallback" },
+          { url: "https://ayming-france.github.io/mindmap/drafts/gtm-ads-id-storage-restore.js", text: "Tag : Ads ID storage + restore" }
+        ]
       },
       {
         id: "gf-hidden-fields",
@@ -239,18 +244,18 @@ export const PROJECTS = [
           {
             id: "geo-llms",
             title: "llms.txt",
-            status: "not_started",
+            status: "done",
             description: "Réécrire llms.txt avec du contexte structuré. Actuellement c'est un dump de 300+ URLs d'articles généré par RankMath. Un LLM qui lit ce fichier ne sait toujours pas ce qu'Ayming fait ni vend.",
             prerequisites: "robots.txt (les bots doivent pouvoir accéder au fichier)",
             blockers: "",
             notes: "",
             checklist: [
-              { text: "Ajouter section About (description, date création, employés, pays)", done: false },
-              { text: "Ajouter section Services (4 verticales avec liens directs par offre)", done: false },
-              { text: "Ajouter proof points par verticale (nb clients, dossiers, € récupérés)", done: false },
-              { text: "Ajouter section Contact (formulaire, adresse)", done: false },
-              { text: "Garder la liste d'articles RankMath en dessous", done: false },
-              { text: "Configurer dans Rank Math > General Settings > LLMs.txt", done: false }
+              { text: "Ajouter section About (description, date création, employés, pays)", done: true },
+              { text: "Ajouter section Services (4 verticales avec liens directs par offre)", done: true },
+              { text: "Ajouter proof points par verticale (nb clients, dossiers, € récupérés)", done: true },
+              { text: "Ajouter section Contact (formulaire, adresse)", done: true },
+              { text: "Supprimer le dump d'articles RankMath", done: true },
+              { text: "Configurer dans Rank Math > General Settings > LLMs.txt", done: true }
             ],
             links: [
               { url: "https://ayming-france.github.io/mindmap/drafts/llms-txt-draft.md", text: "Draft llms.txt à appliquer" }
