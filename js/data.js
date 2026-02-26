@@ -571,3 +571,16 @@ export const STATUS_LABELS = {
   blocked: "Bloqué",
   not_started: "Pas commencé"
 };
+
+// ──────────────────────────────────────────────
+// DEFAULT POSITIONS (cross-device layout)
+// Updated via diff export: paste the _positions object here
+// ──────────────────────────────────────────────
+export const DEFAULT_POSITIONS = {
+  "geo": {"x": 2092.68, "y": 439},
+  "geo-robots": {"x": 2300.68, "y": 348},
+  "geo-llms": {"x": 2300.68, "y": 412},
+  "geo-schema": {"x": 2300.68, "y": 476},
+  "geo-redirects": {"x": 2300.68, "y": 540},
+  "seo": {"x": 2029.33, "y": 303.47}
+};

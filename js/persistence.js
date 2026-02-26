@@ -1,4 +1,4 @@
-import { PROJECTS } from './data.js';
+import { PROJECTS, DEFAULT_POSITIONS } from './data.js';
 import { positionOverrides } from './state.js';
 
 // ──────────────────────────────────────────────
@@ -30,7 +30,7 @@ export function loadFromLocalStorage() {
   const storedVersion = parseInt(localStorage.getItem(VERSION_KEY) || "0");
   if (storedVersion < DATA_VERSION) {
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem("mindmap-positions");
+    // Keep positions - they're layout, not data
     localStorage.setItem(VERSION_KEY, DATA_VERSION);
     return false;
   }
@@ -67,8 +67,11 @@ export function savePositionsToLocalStorage() {
 
 export function loadPositionsFromLocalStorage() {
   const raw = localStorage.getItem("mindmap-positions");
-  if (!raw) return;
-  try { Object.assign(positionOverrides, JSON.parse(raw)); } catch (e) {}
+  if (raw) {
+    try { Object.assign(positionOverrides, JSON.parse(raw)); } catch (e) {}
+  } else if (Object.keys(DEFAULT_POSITIONS).length > 0) {
+    Object.assign(positionOverrides, DEFAULT_POSITIONS);
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -144,10 +147,21 @@ export function exportDiff() {
 
   diffList(_originalData, PROJECTS);
 
+  // Include positions if any exist
+  const posKeys = Object.keys(positionOverrides);
+  if (posKeys.length > 0) {
+    changes.push({ _positions: positionOverrides });
+  }
+
   if (changes.length === 0) { showToast("Aucun changement"); return; }
 
   navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
-    showToast(changes.length + " changement" + (changes.length > 1 ? "s" : "") + " copié" + (changes.length > 1 ? "s" : ""));
+    const posCount = posKeys.length > 0 ? 1 : 0;
+    const dataCount = changes.length - posCount;
+    const parts = [];
+    if (dataCount > 0) parts.push(dataCount + " changement" + (dataCount > 1 ? "s" : ""));
+    if (posCount > 0) parts.push(posKeys.length + " position" + (posKeys.length > 1 ? "s" : ""));
+    showToast(parts.join(" + ") + " copié");
   });
 }
 
