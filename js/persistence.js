@@ -147,10 +147,17 @@ export function exportDiff() {
 
   diffList(_originalData, PROJECTS);
 
-  // Include positions if any exist
-  const posKeys = Object.keys(positionOverrides);
+  // Include only positions that differ from defaults
+  const changedPos = {};
+  for (const [id, pos] of Object.entries(positionOverrides)) {
+    const def = DEFAULT_POSITIONS[id];
+    if (!def || Math.round(pos.x * 100) !== Math.round(def.x * 100) || Math.round(pos.y * 100) !== Math.round(def.y * 100)) {
+      changedPos[id] = pos;
+    }
+  }
+  const posKeys = Object.keys(changedPos);
   if (posKeys.length > 0) {
-    changes.push({ _positions: positionOverrides });
+    changes.push({ _positions: changedPos });
   }
 
   if (changes.length === 0) { showToast("Aucun changement"); return; }
