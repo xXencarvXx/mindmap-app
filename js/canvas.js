@@ -1,5 +1,5 @@
 import { PROJECTS } from './data.js';
-import { state, _nodeElements, positionOverrides, findNodeById } from './state.js';
+import { state, _nodeElements, positionOverrides, positionUndoStack, MAX_UNDO, findNodeById } from './state.js';
 import { savePositionsToLocalStorage, showToast } from './persistence.js';
 import { render, redrawEdges } from './render.js';
 import { closePanel } from './modal.js';
@@ -45,6 +45,11 @@ window.addEventListener("mousemove", (e) => {
   if (!state.dragInfo.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
 
   if (!state.dragInfo.moved) {
+    // Snapshot positions before drag for undo
+    const snap = JSON.parse(JSON.stringify(positionOverrides));
+    positionUndoStack.push(snap);
+    if (positionUndoStack.length > MAX_UNDO) positionUndoStack.shift();
+
     state.dragInfo.childStarts = {};
     for (const cid of getChildNodeIds(state.dragInfo.id)) {
       const ci = _nodeElements[cid];

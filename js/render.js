@@ -8,9 +8,9 @@ import { savePositionsToLocalStorage } from './persistence.js';
 const NODE_H = 40;
 const LEAF_H = 36;
 const GAP_Y = 28;
-const GAP_X_PROJECT = 200;
+const GAP_X_PROJECT = 220;
 const GAP_X_LEAF = 260;
-const PROJECT_GAP_Y = 40;
+const PROJECT_GAP_Y = 70;
 
 function leafHeight(node) {
   if (collapsedNodes.has(node.id) || !node.children || node.children.length === 0) return LEAF_H;
@@ -227,20 +227,43 @@ function drawEdges() {
   if (!svgEl) return;
   svgEl.innerHTML = "";
 
+  // Group edges by parent to compute exit offsets
+  const groups = {};
+  for (const edge of _edgeDefs) {
+    if (!groups[edge.fromId]) groups[edge.fromId] = [];
+    groups[edge.fromId].push(edge);
+  }
+  // Sort each group by child Y so exit points follow top-to-bottom order
+  for (const gid in groups) {
+    groups[gid].sort((a, b) => {
+      const ay = _nodeElements[a.toId] ? _nodeElements[a.toId].cy : 0;
+      const by = _nodeElements[b.toId] ? _nodeElements[b.toId].cy : 0;
+      return ay - by;
+    });
+  }
+
   for (const edge of _edgeDefs) {
     const fromInfo = _nodeElements[edge.fromId];
     const toInfo = _nodeElements[edge.toId];
     if (!fromInfo || !toInfo) continue;
 
     const fromW = fromInfo.el.offsetWidth;
+    const fromH = fromInfo.el.offsetHeight;
     const toW = toInfo.el.offsetWidth;
+
+    // Compute vertical offset on parent node
+    const siblings = groups[edge.fromId];
+    const idx = siblings.indexOf(edge);
+    const count = siblings.length;
+    const spread = Math.min(fromH * 0.7, count * 6);
+    const yOff = count > 1 ? -spread / 2 + (idx / (count - 1)) * spread : 0;
 
     let startX, startY, endX, endY;
     if (toInfo.side === "right") {
-      startX = fromInfo.cx + fromW / 2; startY = fromInfo.cy;
+      startX = fromInfo.cx + fromW / 2; startY = fromInfo.cy + yOff;
       endX = toInfo.cx - toW / 2; endY = toInfo.cy;
     } else {
-      startX = fromInfo.cx - fromW / 2; startY = fromInfo.cy;
+      startX = fromInfo.cx - fromW / 2; startY = fromInfo.cy + yOff;
       endX = toInfo.cx + toW / 2; endY = toInfo.cy;
     }
 

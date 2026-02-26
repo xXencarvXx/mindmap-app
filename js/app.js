@@ -1,6 +1,6 @@
 import { PROJECTS } from './data.js';
-import { state, undoStack, findNodeById, _nodeElements } from './state.js';
-import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, exportJSON, toggleDarkMode, showToast } from './persistence.js';
+import { state, undoStack, positionUndoStack, positionOverrides, findNodeById, _nodeElements } from './state.js';
+import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, exportJSON, toggleDarkMode, showToast } from './persistence.js';
 import { render, setOpenPanelFn } from './render.js';
 import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
 import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard, panToNode } from './canvas.js';
@@ -9,6 +9,15 @@ import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard, panToNode } f
 // UNDO (needs access to both render and modal)
 // ──────────────────────────────────────────────
 function popUndo() {
+  // Position undo takes priority (most recent action)
+  if (positionUndoStack.length > 0) {
+    const snap = positionUndoStack.pop();
+    for (const key in positionOverrides) delete positionOverrides[key];
+    Object.assign(positionOverrides, snap);
+    savePositionsToLocalStorage();
+    render();
+    return true;
+  }
   if (undoStack.length === 0) return false;
   const snapshot = undoStack.pop();
   for (const sp of snapshot) {

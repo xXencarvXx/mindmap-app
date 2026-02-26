@@ -42,7 +42,7 @@
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
 }
 
-.node.project, .node.leaf { cursor: grab; }
+.node.project, .node.leaf { cursor: pointer; }
 .node.project:active, .node.leaf:active { cursor: grabbing; }
 
 /* Leaf nodes */

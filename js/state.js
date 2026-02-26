@@ -30,6 +30,7 @@ export const collapsedNodes = new Set();
 // UNDO SYSTEM
 // ──────────────────────────────────────────────
 export const undoStack = [];
+export const positionUndoStack = [];
 export const MAX_UNDO = 20;
 
 function cloneNode(n) {
