@@ -74,8 +74,45 @@ export const PROJECTS = [
         notes: "",
         checklist: [
           { text: "Réinstaller le plugin", done: true },
-          { text: "Mapper les 5 UTMs aux hidden fields", done: true },
-          { text: "Mapper les 6 Ads IDs aux hidden fields", done: false }
+          { text: "── Contact : UTMs ──", done: false },
+          { text: "Contact : utm_source", done: true },
+          { text: "Contact : utm_medium", done: true },
+          { text: "Contact : utm_campaign", done: true },
+          { text: "Contact : utm_term", done: true },
+          { text: "Contact : utm_content", done: true },
+          { text: "── Contact : Ads IDs ──", done: false },
+          { text: "Contact : gclid", done: false },
+          { text: "Contact : gbraid", done: false },
+          { text: "Contact : wbraid", done: false },
+          { text: "Contact : msclkid", done: false },
+          { text: "Contact : fbclid", done: false },
+          { text: "Contact : li_fat_id", done: false },
+          { text: "── Événements : UTMs ──", done: false },
+          { text: "Événements : utm_source", done: false },
+          { text: "Événements : utm_medium", done: false },
+          { text: "Événements : utm_campaign", done: false },
+          { text: "Événements : utm_term", done: false },
+          { text: "Événements : utm_content", done: false },
+          { text: "── Événements : Ads IDs ──", done: false },
+          { text: "Événements : gclid", done: false },
+          { text: "Événements : gbraid", done: false },
+          { text: "Événements : wbraid", done: false },
+          { text: "Événements : msclkid", done: false },
+          { text: "Événements : fbclid", done: false },
+          { text: "Événements : li_fat_id", done: false },
+          { text: "── Téléchargements : UTMs ──", done: false },
+          { text: "Téléchargements : utm_source", done: false },
+          { text: "Téléchargements : utm_medium", done: false },
+          { text: "Téléchargements : utm_campaign", done: false },
+          { text: "Téléchargements : utm_term", done: false },
+          { text: "Téléchargements : utm_content", done: false },
+          { text: "── Téléchargements : Ads IDs ──", done: false },
+          { text: "Téléchargements : gclid", done: false },
+          { text: "Téléchargements : gbraid", done: false },
+          { text: "Téléchargements : wbraid", done: false },
+          { text: "Téléchargements : msclkid", done: false },
+          { text: "Téléchargements : fbclid", done: false },
+          { text: "Téléchargements : li_fat_id", done: false }
         ],
         links: []
       },
@@ -85,39 +122,39 @@ export const PROJECTS = [
         status: "blocked",
         description: "300+ confirmations Gravity Forms (contact + événements + téléchargements) à nettoyer puis équiper avec les champs UTM cachés (Pass Field Data via Query String).",
         prerequisites: "GF Hidden Fields (Phase 2 : les champs doivent exister avant de configurer Pass Field Data)",
-        blockers: "L'import Gravity Forms crée une copie du formulaire (pas de remplacement possible). La fonctionnalité 'formulaire par défaut' ne fonctionne plus après la migration. L'agence veut facturer le changement manuel sur chaque page.",
-        notes: "",
+        blockers: "L'import Gravity Forms crée une copie du formulaire (pas de remplacement possible). La fonctionnalité 'formulaire par défaut' ne fonctionne plus après la migration. L'agence veut facturer la mise en place de cette fonctionnalité, un ticket a été fait à ce sujet.",
+        notes: "Delphine prend en charge l'ajout des nouveaux champs UTM / Ads ID dans les form handlers Pardot. (contact + événements + téléchargements)",
         checklist: [
           { text: "── Phase 1 : Tri et nettoyage ──", done: false },
           { text: "Créer Google Sheet d'inventaire", done: true },
           { text: "Partager avec l'équipe pour validation", done: true },
           { text: "Contact : supprimer confirmations inutiles", done: false },
-          { text: "Contact : supprimer pages orphelines", done: false },
-          { text: "Contact : supprimer Pardot handlers obsolètes", done: false },
           { text: "Événements : supprimer confirmations inutiles", done: false },
-          { text: "Événements : supprimer pages orphelines", done: false },
-          { text: "Événements : supprimer Pardot handlers obsolètes", done: false },
           { text: "Téléchargements : supprimer confirmations inutiles", done: false },
-          { text: "Téléchargements : supprimer pages orphelines", done: false },
-          { text: "Téléchargements : supprimer Pardot handlers obsolètes", done: false },
-          { text: "── Phase 2 : Ajout champs UTM ──", done: false },
-          { text: "Contact : exporter formulaire JSON", done: false },
-          { text: "Contact : remplacer champs UTM cachés via agent", done: false },
+          { text: "── Phase 2 : Export et Query String UTM ──", done: false },
+          { text: "Contact : exporter JSON et remplacer Query String", done: false },
+          { text: "Événements : exporter JSON et remplacer Query String", done: false },
+          { text: "Téléchargements : exporter JSON et remplacer Query String", done: false },
+          { text: "── Phase 3 : Import et mise à jour pages ──", done: false },
           { text: "Contact : réimporter formulaire", done: false },
-          { text: "Événements : exporter formulaire JSON", done: false },
-          { text: "Événements : remplacer champs UTM cachés via agent", done: false },
+          { text: "Contact : remplacer ancien formulaire par le nouveau sur les pages", done: false },
           { text: "Événements : réimporter formulaire", done: false },
-          { text: "Téléchargements : exporter formulaire JSON", done: false },
-          { text: "Téléchargements : remplacer champs UTM cachés via agent", done: false },
-          { text: "Téléchargements : réimporter formulaire", done: false }
+          { text: "Événements : remplacer ancien formulaire par le nouveau sur les pages", done: false },
+          { text: "Téléchargements : réimporter formulaire", done: false },
+          { text: "Téléchargements : remplacer ancien formulaire par le nouveau sur les pages", done: false },
+          { text: "── Phase 4 : Supprimer pages orphelines ──", done: false },
+          { text: "Événements : supprimer pages orphelines des formulaires supprimés", done: false },
+          { text: "Téléchargements : supprimer pages orphelines des formulaires supprimés", done: false }
         ],
-        links: []
+        links: [
+          { url: "https://docs.google.com/spreadsheets/d/1YL7N5aM5O-XncVKdqjGqbORJJlz9ul1OZeH02tciA0w/edit?gid=1509229921#gid=1509229921", text: "Inventaire Confirmations (Google Sheet)" }
+        ]
       },
       {
         id: "pardot-fields",
         title: "Pardot Custom Fields",
-        status: "in_progress",
-        description: "Créer les champs UTM et Ads IDs dans Pardot puis les ajouter à TOUS les form handlers.",
+        status: "done",
+        description: "Créer les champs UTM et Ads IDs dans Pardot.",
         blockers: "",
         notes: "",
         checklist: [
@@ -126,15 +163,73 @@ export const PROJECTS = [
           { text: "utm_campaign", done: true },
           { text: "utm_term", done: true },
           { text: "utm_content", done: true },
+          { text: "gclid (Google Ads)", done: true },
+          { text: "gbraid (Google Ads iOS)", done: true },
+          { text: "wbraid (Google Ads web)", done: true },
+          { text: "msclkid (Microsoft Ads)", done: true },
+          { text: "fbclid (Facebook/Meta Ads)", done: true },
+          { text: "li_fat_id (LinkedIn Ads)", done: true }
+        ],
+        links: []
+      },
+      {
+        id: "pardot-handlers",
+        title: "Pardot Form Handlers",
+        status: "not_started",
+        description: "Ajouter les champs UTM et Ads IDs à tous les form handlers Pardot (contact, événements, téléchargements). Suivi dans le Google Sheet d'inventaire.",
+        prerequisites: "Pardot Custom Fields (les champs doivent exister avant de les ajouter aux handlers)",
+        blockers: "",
+        notes: "Delphine prend en charge l'ajout des nouveaux champs.",
+        checklist: [
+          { text: "── Contact ──", done: false },
+          { text: "utm_source", done: false },
+          { text: "utm_medium", done: false },
+          { text: "utm_campaign", done: false },
+          { text: "utm_term", done: false },
+          { text: "utm_content", done: false },
           { text: "gclid (Google Ads)", done: false },
           { text: "gbraid (Google Ads iOS)", done: false },
           { text: "wbraid (Google Ads web)", done: false },
           { text: "msclkid (Microsoft Ads)", done: false },
           { text: "fbclid (Facebook/Meta Ads)", done: false },
           { text: "li_fat_id (LinkedIn Ads)", done: false },
-          { text: "Ajouter les nouveaux champs à tous les form handlers", done: false }
+          { text: "Ajouter tag France", done: false },
+          { text: "Domaine tracker (go.ayming.com vs go.ayming.fr)", done: false },
+          { text: "Mettre à jour thank you page URL (redirections en place)", done: false },
+          { text: "── Événements ──", done: false },
+          { text: "utm_source", done: false },
+          { text: "utm_medium", done: false },
+          { text: "utm_campaign", done: false },
+          { text: "utm_term", done: false },
+          { text: "utm_content", done: false },
+          { text: "gclid (Google Ads)", done: false },
+          { text: "gbraid (Google Ads iOS)", done: false },
+          { text: "wbraid (Google Ads web)", done: false },
+          { text: "msclkid (Microsoft Ads)", done: false },
+          { text: "fbclid (Facebook/Meta Ads)", done: false },
+          { text: "li_fat_id (LinkedIn Ads)", done: false },
+          { text: "Ajouter tag France", done: false },
+          { text: "Domaine tracker (go.ayming.com vs go.ayming.fr)", done: false },
+          { text: "Mettre à jour thank you page URL (redirections en place)", done: false },
+          { text: "── Téléchargements ──", done: false },
+          { text: "utm_source", done: false },
+          { text: "utm_medium", done: false },
+          { text: "utm_campaign", done: false },
+          { text: "utm_term", done: false },
+          { text: "utm_content", done: false },
+          { text: "gclid (Google Ads)", done: false },
+          { text: "gbraid (Google Ads iOS)", done: false },
+          { text: "wbraid (Google Ads web)", done: false },
+          { text: "msclkid (Microsoft Ads)", done: false },
+          { text: "fbclid (Facebook/Meta Ads)", done: false },
+          { text: "li_fat_id (LinkedIn Ads)", done: false },
+          { text: "Ajouter tag France", done: false },
+          { text: "Domaine tracker (go.ayming.com vs go.ayming.fr)", done: false },
+          { text: "Mettre à jour thank you page URL (redirections en place)", done: false }
         ],
-        links: []
+        links: [
+          { url: "https://docs.google.com/spreadsheets/d/1YL7N5aM5O-XncVKdqjGqbORJJlz9ul1OZeH02tciA0w/edit?gid=1509229921#gid=1509229921", text: "Inventaire Form Handlers (Google Sheet)" }
+        ]
       },
       {
         id: "sf-fields",
@@ -165,7 +260,7 @@ export const PROJECTS = [
           { text: "Mapper champs Pardot vers SF", done: false }
         ],
         links: []
-      }
+      },
     ]
   },
   {
@@ -485,7 +580,7 @@ export const PROJECTS = [
   },
   {
     id: "acciline",
-    title: "Module Risque Acciline",
+    title: "Acciline+",
     color: "#8b5cf6",
     status: "in_progress",
     description: "Optimiser le processus d'onboarding du module Risque afin de réduire le Time to Value de 25%.",
@@ -495,34 +590,36 @@ export const PROJECTS = [
     links: [],
     children: [
       {
-        id: "iprp",
-        title: "IPRP Strategy",
-        status: "not_started",
-        description: "Stratégie IPRP.",
-        blockers: "",
-        notes: "",
-        checklist: [],
-        links: []
-      },
-      {
-        id: "new-tool",
-        title: "New Tool",
+        id: "module-risque",
+        title: "Module Risque",
         status: "in_progress",
-        description: "Nouvel outil codé en interne.",
+        description: "Module Risque d'Acciline+.",
         blockers: "",
         notes: "",
         checklist: [],
-        links: []
-      },
-      {
-        id: "ttv",
-        title: "Time to Value",
-        status: "not_started",
-        description: "Établir une baseline du temps moyen de déploiement avec les CSM. Formaliser un processus d'onboarding documenté et standardisé. Réduire le Time to Value de 25% par rapport à cette baseline.",
-        blockers: "",
-        notes: "",
-        checklist: [],
-        links: []
+        links: [],
+        children: [
+          {
+            id: "iprp",
+            title: "IPRP Offer",
+            status: "not_started",
+            description: "Stratégie IPRP.",
+            blockers: "",
+            notes: "",
+            checklist: [],
+            links: []
+          },
+          {
+            id: "import-tool",
+            title: "Import Tool",
+            status: "in_progress",
+            description: "Nouvel outil d'import codé en interne.",
+            blockers: "",
+            notes: "",
+            checklist: [],
+            links: []
+          }
+        ]
       }
     ]
   },
@@ -530,13 +627,44 @@ export const PROJECTS = [
     id: "kpi",
     title: "KPI Performance MKT",
     color: "#ec4899",
-    status: "not_started",
+    status: "in_progress",
     description: "Contribuer à la livraison des KPI performance MKT et structurer le process Inbound MKT. T3.",
     blockers: "",
     notes: "",
     checklist: [],
     links: [],
-    children: []
+    children: [
+      {
+        id: "sf-stranded-recovery",
+        title: "Récupération Activités Orphelines",
+        status: "in_progress",
+        description: "Récupération des leads/contacts ayant une Primary Campaign Source dans leurs activités (Events, Tasks, Calls) mais absents des CampaignMembers. Processus automatisé via la skill Claude 'salesforce-data'.",
+        blockers: "",
+        notes: "",
+        checklist: [],
+        links: [],
+        children: [
+          {
+            id: "sf-ad2025-acciline",
+            title: "Acciline",
+            status: "done",
+            description: "123 membres récupérés le 26/02/2026.<br><br>• AD 2025 - TEL - Prospection : 89<br>• AD 2025 - ACB - CSM : 9<br>• AD 2025 - EVT - Webinaire HSE : 7<br>• AD 2025 - ACB - Upsell / Cross Sell : 6<br>• AD 2025 - EVT - Preventica Paris : 6<br>• AD 2025 - REQ - Acciline FR : 3<br>• AD 2025 - TEL - Prospection CRM : 3",
+            blockers: "",
+            notes: "",
+            checklist: [],
+            links: []
+          },
+          {
+            id: "sf-ayming-france",
+            title: "Ayming France",
+            status: "not_started",
+            description: "",
+            checklist: [],
+            links: []
+          }
+        ]
+      }
+    ]
   },
   {
     id: "digital",
@@ -546,19 +674,57 @@ export const PROJECTS = [
     description: "Formations obligatoires sur la plateforme digitale Ayming Academy. 3 briques corporate, 2 briques flex manager, 1 brique flex au choix.",
     blockers: "",
     notes: "",
-    checklist: [
-      { text: "── Briques corporate ──", done: false },
-      { text: "Apporter une solution et pas seulement un problème", done: false },
-      { text: "Les bases de la cybersécurité", done: false },
-      { text: "Ayming AI : Chat, Transcribe, Translate", done: false },
-      { text: "── Briques flex manager ──", done: false },
-      { text: "Gestion de projet : Planification de projet", done: false },
-      { text: "Renforcez votre communication persuasive", done: false },
-      { text: "── Brique flex au choix ──", done: false },
-      { text: "Donner un feedback positif et constructif", done: false }
-    ],
+    checklist: [],
     links: [],
-    children: []
+    children: [
+      {
+        id: "academy-corporate",
+        title: "Briques Corporate",
+        status: "not_started",
+        description: "3 briques corporate obligatoires.",
+        blockers: "Je n'arrive pas à trouver facilement ces liens dans le moteur de recherche :<br><ul><li>Apporter une solution et pas seulement un problème (fonction corporate)</li><li>Les bases de la cybersécurité</li></ul>",
+        checklist: [
+          { text: "── Apporter une solution / Relation client ──", done: false },
+          { text: "Apporter une solution et pas seulement un problème (fonction corporate)", done: false },
+          { text: "Prêt à développer votre relation client chez Ayming (ventes et conseil)", done: false },
+          { text: "── Cybersécurité ──", done: false },
+          { text: "Les bases de la cybersécurité", done: false },
+          { text: "── Ayming AI ──", done: false },
+          { text: "Ayming AI - Chat", done: false },
+          { text: "Ayming AI - Transcribe", done: false },
+          { text: "Ayming AI - Translate", done: false }
+        ],
+        links: [
+          { url: "https://www.aymingacademy.com/learn/courses/2475/ayming-chat", text: "Ayming Chat" },
+          { url: "https://www.aymingacademy.com/learn/courses/2476/ayming-transcribe", text: "Ayming Transcribe" },
+          { url: "https://www.aymingacademy.com/learn/courses/2474/ayming-translate", text: "Ayming Translate" },
+          { url: "https://www.aymingacademy.com/learn/courses/2470/fr-pret-a-developper-vos-talents-commerciaux-chez-ayming", text: "Prêt à développer vos talents commerciaux" }
+        ]
+      },
+      {
+        id: "academy-flex-manager",
+        title: "Briques Flex Manager",
+        status: "not_started",
+        description: "2 briques flex proposées par votre manager.",
+        checklist: [
+          { text: "Gestion de projet : Planification de projet | Project Management: Project planning (FR)", done: false },
+          { text: "Renforcez votre communication persuasive (Enhance your persuasive communication skills)", done: false }
+        ],
+        links: []
+      },
+      {
+        id: "academy-flex-choix",
+        title: "Brique Flex au Choix",
+        status: "not_started",
+        description: "1 brique flex de votre choix.",
+        checklist: [
+          { text: "Donner un feedback positif et constructif (Giving positive and constructive feedback)", done: false }
+        ],
+        links: [
+          { url: "https://www.aymingacademy.com/learn/courses/1221/donner-un-feedback-positif-et-constructif-giving-positive-and-constructive-feedback", text: "Donner un feedback positif et constructif" }
+        ]
+      }
+    ]
   }
 ];
 
@@ -577,10 +743,32 @@ export const STATUS_LABELS = {
 // Updated via diff export: paste the _positions object here
 // ──────────────────────────────────────────────
 export const DEFAULT_POSITIONS = {
-  "geo": {"x": 2092.68, "y": 439},
-  "geo-robots": {"x": 2300.68, "y": 348},
-  "geo-llms": {"x": 2300.68, "y": 412},
-  "geo-schema": {"x": 2300.68, "y": 476},
-  "geo-redirects": {"x": 2300.68, "y": 540},
-  "seo": {"x": 2029.33, "y": 303.47}
+  "attribution": { "x": 1027.16, "y": 495.57 },
+  "gtm-tags": { "x": 793.16, "y": 305.57 },
+  "gf-hidden-fields": { "x": 793.16, "y": 369.57 },
+  "campaign-tracker": { "x": 793.16, "y": 433.57 },
+  "confirmations": { "x": 793.16, "y": 497.57 },
+  "pardot-fields": { "x": 793.16, "y": 561.57 },
+  "pardot-handlers": { "x": 793.16, "y": 625.57 },
+  "sf-fields": { "x": 793.16, "y": 689.57 },
+  "website": { "x": 1785.17, "y": 565.39 },
+  "seo": { "x": 2019.17, "y": 352.39 },
+  "offsite": { "x": 2019.17, "y": 416.39 },
+  "ga4": { "x": 2019.17, "y": 480.39 },
+  "geo": { "x": 2019.17, "y": 681.39 },
+  "geo-robots": { "x": 2227.17, "y": 590.39 },
+  "geo-llms": { "x": 2227.17, "y": 654.39 },
+  "geo-schema": { "x": 2227.17, "y": 718.39 },
+  "geo-redirects": { "x": 2227.17, "y": 782.39 },
+  "module-risque": { "x": 1888.83, "y": 889.28 },
+  "iprp": { "x": 2096.83, "y": 862.28 },
+  "import-tool": { "x": 2096.83, "y": 926.28 },
+  "digital": { "x": 1838.01, "y": 1096.16 },
+  "academy-corporate": { "x": 2072.01, "y": 1034.16 },
+  "academy-flex-manager": { "x": 2072.01, "y": 1098.16 },
+  "academy-flex-choix": { "x": 2072.01, "y": 1162.16 },
+  "kpi": { "x": 1195.45, "y": 1134.42 },
+  "sf-stranded-recovery": { "x": 961.45, "y": 1154.42 },
+  "sf-ad2025-acciline": { "x": 753.45, "y": 1127.42 },
+  "sf-ayming-france": { "x": 753.45, "y": 1191.42 }
 };

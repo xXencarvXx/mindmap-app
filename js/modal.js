@@ -625,6 +625,11 @@ export function openPanel(node) {
         const n = findNodeById(state.currentPanelNodeId);
         if (n) { n[key] = editor.innerHTML; saveToLocalStorage(); }
       });
+      editor.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const text = e.clipboardData.getData("text/plain");
+        document.execCommand("insertText", false, text);
+      });
     }
   }
 
