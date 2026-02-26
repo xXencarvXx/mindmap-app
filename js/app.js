@@ -1,6 +1,6 @@
 import { PROJECTS } from './data.js';
 import { state, undoStack, positionUndoStack, positionOverrides, findNodeById, _nodeElements } from './state.js';
-import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, exportJSON, toggleDarkMode, showToast } from './persistence.js';
+import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, snapshotOriginal, exportDiff, toggleDarkMode, showToast } from './persistence.js';
 import { render, setOpenPanelFn } from './render.js';
 import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
 import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard, panToNode } from './canvas.js';
@@ -18,30 +18,27 @@ function popUndo() {
     render();
     return true;
   }
+  function restoreNode(snap, target) {
+    target.status = snap.status;
+    target.description = snap.description;
+    target.prerequisites = snap.prerequisites;
+    target.blockers = snap.blockers;
+    target.notes = snap.notes;
+    target.checklist = snap.checklist;
+    target.links = snap.links;
+    if (snap.children && target.children) {
+      for (const sc of snap.children) {
+        const tc = target.children.find(c => c.id === sc.id);
+        if (tc) restoreNode(sc, tc);
+      }
+      target.children = target.children.filter(c => snap.children.some(sc => sc.id === c.id));
+    }
+  }
   if (undoStack.length === 0) return false;
   const snapshot = undoStack.pop();
   for (const sp of snapshot) {
     const target = PROJECTS.find(p => p.id === sp.id);
-    if (!target) continue;
-    target.status = sp.status;
-    target.description = sp.description;
-    target.prerequisites = sp.prerequisites;
-    target.blockers = sp.blockers;
-    target.notes = sp.notes;
-    target.checklist = sp.checklist;
-    target.links = sp.links;
-    for (const sc of sp.children) {
-      const tc = target.children.find(c => c.id === sc.id);
-      if (!tc) continue;
-      tc.status = sc.status;
-      tc.description = sc.description;
-      tc.prerequisites = sc.prerequisites;
-      tc.blockers = sc.blockers;
-      tc.notes = sc.notes;
-      tc.checklist = sc.checklist;
-      tc.links = sc.links;
-    }
-    target.children = target.children.filter(c => sp.children.some(sc => sc.id === c.id));
+    if (target) restoreNode(sp, target);
   }
   saveToLocalStorage();
   render();
@@ -300,7 +297,7 @@ document.querySelector("#detail-panel .close-btn").addEventListener("click", clo
 document.getElementById("btn-zoom-in").addEventListener("click", () => { zoomIn(); updateZoomLabel(); });
 document.getElementById("btn-zoom-out").addEventListener("click", () => { zoomOut(); updateZoomLabel(); });
 document.getElementById("btn-reset-view").addEventListener("click", () => { resetView(); updateZoomLabel(); });
-document.getElementById("btn-export").addEventListener("click", exportJSON);
+document.getElementById("btn-export").addEventListener("click", exportDiff);
 document.getElementById("dark-toggle").addEventListener("click", toggleDarkMode);
 
 function updateZoomLabel() {
@@ -316,6 +313,7 @@ document.getElementById("canvas-wrapper").addEventListener("wheel", () => {
 // ──────────────────────────────────────────────
 // INIT
 // ──────────────────────────────────────────────
+snapshotOriginal();
 loadFromLocalStorage();
 loadPositionsFromLocalStorage();
 loadDarkMode();

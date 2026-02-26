@@ -5,22 +5,24 @@ import { positionOverrides } from './state.js';
 // LOCAL STORAGE
 // ──────────────────────────────────────────────
 const STORAGE_KEY = "mindmap-priorities-data";
-export const DATA_VERSION = 19;
+export const DATA_VERSION = 20;
 const VERSION_KEY = "mindmap-data-version";
 const DARK_KEY = "mindmap-dark-mode";
 
+function serializeNode(n) {
+  const obj = {
+    id: n.id, title: n.title, status: n.status,
+    description: n.description, prerequisites: n.prerequisites || "",
+    blockers: n.blockers, notes: n.notes || "",
+    checklist: n.checklist || [], links: n.links || []
+  };
+  if (n.color) obj.color = n.color;
+  if (n.children) obj.children = n.children.map(c => serializeNode(c));
+  return obj;
+}
+
 export function saveToLocalStorage() {
-  const data = PROJECTS.map(p => ({
-    id: p.id, title: p.title, color: p.color, status: p.status,
-    description: p.description, prerequisites: p.prerequisites || "", blockers: p.blockers, notes: p.notes || "",
-    checklist: p.checklist || [], links: p.links || [],
-    children: p.children.map(c => ({
-      id: c.id, title: c.title, status: c.status,
-      description: c.description, prerequisites: c.prerequisites || "", blockers: c.blockers, notes: c.notes || "",
-      checklist: c.checklist || [], links: c.links || []
-    }))
-  }));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(PROJECTS.map(serializeNode)));
   localStorage.setItem(VERSION_KEY, DATA_VERSION);
 }
 
@@ -34,29 +36,26 @@ export function loadFromLocalStorage() {
   }
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return false;
+  function loadNode(saved, target) {
+    target.status = saved.status;
+    target.description = saved.description;
+    target.prerequisites = saved.prerequisites || "";
+    target.blockers = saved.blockers;
+    target.notes = saved.notes || saved.progress || "";
+    target.checklist = saved.checklist || [];
+    target.links = saved.links || [];
+    if (saved.children && target.children) {
+      for (const sc of saved.children) {
+        const tc = target.children.find(c => c.id === sc.id);
+        if (tc) loadNode(sc, tc);
+      }
+    }
+  }
   try {
     const saved = JSON.parse(raw);
     for (const sp of saved) {
       const target = PROJECTS.find(p => p.id === sp.id);
-      if (!target) continue;
-      target.status = sp.status;
-      target.description = sp.description;
-      target.prerequisites = sp.prerequisites || "";
-      target.blockers = sp.blockers;
-      target.notes = sp.notes || sp.progress || "";
-      target.checklist = sp.checklist || [];
-      target.links = sp.links || [];
-      for (const sc of sp.children) {
-        const tc = target.children.find(c => c.id === sc.id);
-        if (!tc) continue;
-        tc.status = sc.status;
-        tc.description = sc.description;
-        tc.prerequisites = sc.prerequisites || "";
-        tc.blockers = sc.blockers;
-        tc.notes = sc.notes || sc.progress || "";
-        tc.checklist = sc.checklist || [];
-        tc.links = sc.links || [];
-      }
+      if (target) loadNode(sp, target);
     }
     return true;
   } catch (e) { return false; }
@@ -73,21 +72,88 @@ export function loadPositionsFromLocalStorage() {
 }
 
 // ──────────────────────────────────────────────
-// EXPORT
+// DIFF EXPORT (snapshot original, export only changes)
 // ──────────────────────────────────────────────
-export function exportJSON() {
-  const data = PROJECTS.map(p => ({
-    id: p.id, title: p.title, color: p.color, status: p.status,
-    description: p.description, prerequisites: p.prerequisites || "", blockers: p.blockers, notes: p.notes || "",
-    checklist: p.checklist || [], links: p.links || [],
-    children: p.children.map(c => ({
-      id: c.id, title: c.title, status: c.status,
-      description: c.description, prerequisites: c.prerequisites || "", blockers: c.blockers, notes: c.notes || "",
-      checklist: c.checklist || [], links: c.links || []
-    }))
-  }));
-  navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
-    showToast("JSON copié dans le presse-papiers");
+let _originalData = null;
+
+function deepCloneNodes(nodes) {
+  return nodes.map(n => {
+    const c = {
+      id: n.id, title: n.title, status: n.status,
+      description: n.description || "", prerequisites: n.prerequisites || "",
+      blockers: n.blockers || "", notes: n.notes || "",
+      checklist: (n.checklist || []).map(i => ({ ...i })),
+      links: (n.links || []).map(l => ({ ...l }))
+    };
+    if (n.color) c.color = n.color;
+    if (n.children) c.children = deepCloneNodes(n.children);
+    return c;
+  });
+}
+
+export function snapshotOriginal() {
+  _originalData = deepCloneNodes(PROJECTS);
+}
+
+export function exportDiff() {
+  if (!_originalData) { exportFull(); return; }
+
+  const changes = [];
+
+  function diffNode(orig, curr) {
+    const ch = { id: curr.id };
+    let has = false;
+
+    for (const f of ["title", "status", "description", "prerequisites", "blockers", "notes"]) {
+      if ((orig[f] || "") !== (curr[f] || "")) { ch[f] = curr[f] || ""; has = true; }
+    }
+
+    const oCL = orig.checklist || [], cCL = curr.checklist || [];
+    const checked = [], unchecked = [], addCL = [], rmCL = [];
+    for (const cc of cCL) {
+      const oc = oCL.find(o => o.text === cc.text);
+      if (!oc) addCL.push(cc.text);
+      else if (oc.done !== cc.done) (cc.done ? checked : unchecked).push(cc.text);
+    }
+    for (const oc of oCL) { if (!cCL.find(c => c.text === oc.text)) rmCL.push(oc.text); }
+    if (checked.length) { ch.check = checked; has = true; }
+    if (unchecked.length) { ch.uncheck = unchecked; has = true; }
+    if (addCL.length) { ch.add_checklist = addCL; has = true; }
+    if (rmCL.length) { ch.remove_checklist = rmCL; has = true; }
+
+    const oLk = orig.links || [], cLk = curr.links || [];
+    const addLk = cLk.filter(cl => !oLk.find(ol => ol.url === cl.url));
+    const rmLk = oLk.filter(ol => !cLk.find(cl => cl.url === ol.url));
+    if (addLk.length) { ch.add_link = addLk; has = true; }
+    if (rmLk.length) { ch.remove_link = rmLk.map(l => l.url); has = true; }
+
+    if (has) changes.push(ch);
+  }
+
+  function diffList(origList, currList) {
+    for (const curr of currList) {
+      const orig = origList.find(o => o.id === curr.id);
+      if (!orig) { changes.push({ id: curr.id, _new: true, title: curr.title, status: curr.status }); continue; }
+      diffNode(orig, curr);
+      if (curr.children && orig.children) diffList(orig.children, curr.children);
+    }
+    for (const orig of origList) {
+      if (!currList.find(c => c.id === orig.id)) changes.push({ id: orig.id, _deleted: true });
+    }
+  }
+
+  diffList(_originalData, PROJECTS);
+
+  if (changes.length === 0) { showToast("Aucun changement"); return; }
+
+  navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(() => {
+    showToast(changes.length + " changement" + (changes.length > 1 ? "s" : "") + " copié" + (changes.length > 1 ? "s" : ""));
+  });
+}
+
+export function exportFull() {
+  navigator.clipboard.writeText(JSON.stringify(PROJECTS.map(serializeNode), null, 2)).then(() => {
+    showToast("JSON complet copié");
   });
 }
 
