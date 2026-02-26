@@ -5,7 +5,7 @@ import { positionOverrides } from './state.js';
 // LOCAL STORAGE
 // ──────────────────────────────────────────────
 const STORAGE_KEY = "mindmap-priorities-data";
-export const DATA_VERSION = 59;
+export const DATA_VERSION = 60;
 const VERSION_KEY = "mindmap-data-version";
 const DARK_KEY = "mindmap-dark-mode";
 
@@ -21,36 +21,38 @@ function serializeNode(n) {
   return obj;
 }
 
+// Extracted to module level so both local and cloud load can use it
+function loadNode(saved, target) {
+  target.status = saved.status;
+  target.description = saved.description;
+  target.prerequisites = saved.prerequisites || "";
+  target.blockers = saved.blockers;
+  target.notes = saved.notes || saved.progress || "";
+  target.checklist = saved.checklist || [];
+  target.links = saved.links || [];
+  if (saved.children && target.children) {
+    for (const sc of saved.children) {
+      const tc = target.children.find(c => c.id === sc.id);
+      if (tc) loadNode(sc, tc);
+    }
+  }
+}
+
 export function saveToLocalStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(PROJECTS.map(serializeNode)));
   localStorage.setItem(VERSION_KEY, DATA_VERSION);
+  saveToSupabase();
 }
 
 export function loadFromLocalStorage() {
   const storedVersion = parseInt(localStorage.getItem(VERSION_KEY) || "0");
   if (storedVersion < DATA_VERSION) {
     localStorage.removeItem(STORAGE_KEY);
-    // Keep positions - they're layout, not data
     localStorage.setItem(VERSION_KEY, DATA_VERSION);
     return false;
   }
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return false;
-  function loadNode(saved, target) {
-    target.status = saved.status;
-    target.description = saved.description;
-    target.prerequisites = saved.prerequisites || "";
-    target.blockers = saved.blockers;
-    target.notes = saved.notes || saved.progress || "";
-    target.checklist = saved.checklist || [];
-    target.links = saved.links || [];
-    if (saved.children && target.children) {
-      for (const sc of saved.children) {
-        const tc = target.children.find(c => c.id === sc.id);
-        if (tc) loadNode(sc, tc);
-      }
-    }
-  }
   try {
     const saved = JSON.parse(raw);
     for (const sp of saved) {
@@ -63,6 +65,7 @@ export function loadFromLocalStorage() {
 
 export function savePositionsToLocalStorage() {
   localStorage.setItem("mindmap-positions", JSON.stringify(positionOverrides));
+  saveToSupabase();
 }
 
 export function loadPositionsFromLocalStorage() {
@@ -71,6 +74,73 @@ export function loadPositionsFromLocalStorage() {
     try { Object.assign(positionOverrides, JSON.parse(raw)); } catch (e) {}
   } else if (Object.keys(DEFAULT_POSITIONS).length > 0) {
     Object.assign(positionOverrides, DEFAULT_POSITIONS);
+  }
+}
+
+// ──────────────────────────────────────────────
+// SUPABASE (cloud save/load)
+// ──────────────────────────────────────────────
+let _supabaseModule = null;
+let _currentUser = null;
+
+export function setSupabaseContext(mod, user) {
+  _supabaseModule = mod;
+  _currentUser = user;
+}
+
+// Debounced cloud save: waits 1.5s after last mutation, then upserts
+let _saveTimer = null;
+function saveToSupabase() {
+  if (!_supabaseModule || !_currentUser) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      const { error } = await _supabaseModule.supabase.from('mindmaps').upsert({
+        user_id: _currentUser.id,
+        projects: PROJECTS.map(serializeNode),
+        positions: { ...positionOverrides },
+        updated_at: new Date().toISOString()
+      });
+      if (error) console.warn('Supabase save failed:', error.message);
+    } catch (e) {
+      console.warn('Supabase save failed:', e);
+    }
+  }, 1500);
+}
+
+export async function loadFromSupabase() {
+  if (!_supabaseModule || !_currentUser) return false;
+  try {
+    const { data, error } = await _supabaseModule.supabase
+      .from('mindmaps')
+      .select('projects, positions')
+      .eq('user_id', _currentUser.id)
+      .single();
+
+    if (error || !data || !data.projects || data.projects.length === 0) return false;
+
+    // Replace PROJECTS content with Supabase data (full state)
+    PROJECTS.length = 0;
+    for (const p of data.projects) {
+      PROJECTS.push(p);
+    }
+
+    if (data.positions && Object.keys(data.positions).length > 0) {
+      for (const key in positionOverrides) delete positionOverrides[key];
+      Object.assign(positionOverrides, data.positions);
+    }
+
+    // Also update localStorage as cache
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.projects));
+    localStorage.setItem(VERSION_KEY, DATA_VERSION);
+    if (data.positions) {
+      localStorage.setItem("mindmap-positions", JSON.stringify(data.positions));
+    }
+
+    return true;
+  } catch (e) {
+    console.warn('Supabase load failed:', e);
+    return false;
   }
 }
 

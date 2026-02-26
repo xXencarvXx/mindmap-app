@@ -1,6 +1,6 @@
 import { PROJECTS } from './data.js';
 import { state, undoStack, positionUndoStack, positionOverrides, findNodeById, _nodeElements } from './state.js';
-import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, snapshotOriginal, exportDiff, toggleDarkMode, showToast } from './persistence.js';
+import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadFromSupabase, setSupabaseContext, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, snapshotOriginal, exportDiff, toggleDarkMode, showToast } from './persistence.js';
 import { render, setOpenPanelFn } from './render.js';
 import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
 import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard, panToNode } from './canvas.js';
@@ -75,6 +75,44 @@ window.popUndo = popUndo;
 const STATUS_COLORS = { done: "#10b981", in_progress: "#3b82f6", blocked: "#ef4444", not_started: "#9ca3af" };
 
 // ──────────────────────────────────────────────
+// AUTH UI
+// ──────────────────────────────────────────────
+function updateAuthUI(user, sb) {
+  const btn = document.getElementById('btn-auth');
+  if (!btn) return;
+  btn.style.display = '';
+  if (user) {
+    const avatar = user.user_metadata?.avatar_url;
+    if (avatar) {
+      btn.innerHTML = `<img src="${avatar}" width="22" height="22" style="border-radius:50%">`;
+    } else {
+      const initial = (user.email || '?')[0].toUpperCase();
+      btn.innerHTML = `<span style="width:22px;height:22px;border-radius:50%;background:#3b82f6;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">${initial}</span>`;
+    }
+    btn.title = user.email + ' (cliquez pour déconnexion)';
+    btn.onclick = () => sb.signOut();
+  } else {
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    btn.title = 'Connexion';
+    btn.onclick = () => sb.signInWithGoogle();
+  }
+}
+
+function showLanding() {
+  const landing = document.getElementById('landing');
+  const app = document.getElementById('app');
+  if (landing) landing.style.display = '';
+  if (app) app.style.display = 'none';
+}
+
+function showApp() {
+  const landing = document.getElementById('landing');
+  const app = document.getElementById('app');
+  if (landing) landing.style.display = 'none';
+  if (app) app.style.display = '';
+}
+
+// ──────────────────────────────────────────────
 // STATUS FILTERS (legend click)
 // ──────────────────────────────────────────────
 const activeFilters = new Set();
@@ -91,7 +129,6 @@ function applyFilters() {
   document.querySelectorAll(".node[data-status]").forEach(el => {
     if (activeFilters.has(el.dataset.status)) {
       el.classList.add("filter-match");
-      // Walk up to light parent project nodes
       let id = el.dataset.id;
       for (const p of PROJECTS) {
         if (hasDescendant(p, id)) { matchedParents.add(p.id); markAncestors(p, id, matchedParents); break; }
@@ -185,7 +222,6 @@ function renderSearchResults(query) {
   }
   const q = query.toLowerCase();
   const all = buildSearchIndex().filter(item => item.text.toLowerCase().includes(q));
-  // Dedupe: keep first match per node, but prioritize node-title matches
   const seen = new Set();
   const deduped = [];
   for (const m of all) {
@@ -311,17 +347,76 @@ document.getElementById("canvas-wrapper").addEventListener("wheel", () => {
 }, { passive: true });
 
 // ──────────────────────────────────────────────
-// INIT
+// INIT (async for Supabase auth)
 // ──────────────────────────────────────────────
-snapshotOriginal();
-loadFromLocalStorage();
-loadPositionsFromLocalStorage();
-loadDarkMode();
-render();
-resetView();
-updateZoomLabel();
-initChecklistDrag();
-initKeyboard(popUndo, updateZoomLabel, openSearch, togglePresenter);
+async function init() {
+  loadDarkMode();
+
+  let user = null;
+  let sb = null;
+
+  // Try loading Supabase (dynamic import so CDN failure is graceful)
+  try {
+    sb = await import('./supabase.js');
+    user = await sb.getUser();
+  } catch (e) {
+    console.warn('Supabase unavailable, offline mode:', e);
+  }
+
+  if (!user) {
+    // Not logged in: show landing page
+    showLanding();
+
+    // Wire landing sign-in button
+    const signInBtn = document.getElementById('btn-sign-in');
+    if (signInBtn && sb) {
+      signInBtn.addEventListener('click', () => sb.signInWithGoogle());
+    } else if (signInBtn) {
+      signInBtn.addEventListener('click', () => {
+        showToast('Service de connexion indisponible');
+      });
+    }
+
+    // Listen for auth changes (user might sign in via redirect)
+    if (sb) {
+      sb.onAuthChange(async (u) => {
+        if (u) {
+          user = u;
+          setSupabaseContext(sb, user);
+          updateAuthUI(user, sb);
+          showApp();
+          snapshotOriginal();
+          const loaded = await loadFromSupabase();
+          if (!loaded) loadFromLocalStorage();
+          loadPositionsFromLocalStorage();
+          render();
+          resetView();
+          updateZoomLabel();
+          initChecklistDrag();
+          initKeyboard(popUndo, updateZoomLabel, openSearch, togglePresenter);
+        }
+      });
+    }
+    return;
+  }
+
+  // Logged in: show app directly
+  setSupabaseContext(sb, user);
+  updateAuthUI(user, sb);
+  showApp();
+
+  snapshotOriginal();
+  const loaded = await loadFromSupabase();
+  if (!loaded) loadFromLocalStorage();
+  loadPositionsFromLocalStorage();
+  render();
+  resetView();
+  updateZoomLabel();
+  initChecklistDrag();
+  initKeyboard(popUndo, updateZoomLabel, openSearch, togglePresenter);
+}
+
+init();
 
 window._postRender = () => {
   if (activeFilters.size > 0) requestAnimationFrame(applyFilters);
