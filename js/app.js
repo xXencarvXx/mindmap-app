@@ -367,13 +367,30 @@ async function init() {
     // Not logged in: show landing page
     showLanding();
 
-    // Wire landing sign-in button
-    const signInBtn = document.getElementById('btn-sign-in');
-    if (signInBtn && sb) {
-      signInBtn.addEventListener('click', () => sb.signInWithGoogle());
-    } else if (signInBtn) {
-      signInBtn.addEventListener('click', () => {
-        showToast('Service de connexion indisponible');
+    // Wire landing email/password form
+    const authForm = document.getElementById('auth-form');
+    const authMessage = document.getElementById('auth-message');
+    if (authForm && sb) {
+      authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        const btn = document.getElementById('btn-sign-in');
+        btn.disabled = true;
+        btn.textContent = 'Connexion...';
+        authMessage.textContent = '';
+
+        const result = await sb.signInWithEmail(email, password);
+        if (result.error) {
+          authMessage.textContent = result.error;
+          authMessage.className = 'landing-message error';
+        } else if (result.needsConfirmation) {
+          authMessage.textContent = 'Vérifiez votre email pour confirmer votre compte.';
+          authMessage.className = 'landing-message success';
+        }
+        // If result.user, onAuthChange will handle the transition
+        btn.disabled = false;
+        btn.textContent = 'Connexion';
       });
     }
 

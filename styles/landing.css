@@ -83,6 +83,59 @@
   flex-shrink: 0;
 }
 
+/* ── Form ── */
+.landing-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.landing-form input {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1e293b;
+  background: #f8fafc;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.landing-form input:focus {
+  border-color: #3b82f6;
+  background: #fff;
+}
+
+.landing-form input::placeholder {
+  color: #94a3b8;
+}
+
+.landing-message {
+  font-size: 13px;
+  min-height: 18px;
+  margin-bottom: 4px;
+}
+
+.landing-message.error {
+  color: #ef4444;
+}
+
+.landing-message.success {
+  color: #10b981;
+}
+
+.landing-hint {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.landing-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ── Dark mode ── */
 body.dark #landing {
   background-color: #0f172a;
@@ -112,4 +165,23 @@ body.dark .landing-btn {
 body.dark .landing-btn:hover {
   background: #3b4a5e;
   border-color: #64748b;
+}
+
+body.dark .landing-form input {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+body.dark .landing-form input:focus {
+  border-color: #3b82f6;
+  background: #1e293b;
+}
+
+body.dark .landing-form input::placeholder {
+  color: #64748b;
+}
+
+body.dark .landing-hint {
+  color: #64748b;
 }
