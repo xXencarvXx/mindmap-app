@@ -5,26 +5,40 @@ Interactive priority mind map deployed to GitHub Pages.
 ## Architecture
 
 - **Modular structure**: HTML shell + separate CSS/JS files (ES modules, no build step)
-- **localStorage** for browser-side persistence, **DATA_VERSION** for cache invalidation
-- **GitHub Pages**: https://ayming-france.github.io/mindmap/
-- **Repo**: `ayming-france/mindmap` (public)
+- **Dual storage**: localStorage (instant) + Supabase (debounced 1.5s cloud sync)
+- **Auth**: Email/password via Supabase Auth. Landing page when not logged in.
+- **GitHub Pages**: https://xxencarvxx.github.io/mindmap-app/
+- **Repos**:
+  - `xXencarvXx/mindmap` (private) = source code
+  - `xXencarvXx/mindmap-app` (public) = GitHub Pages deploy only
+
+### Data Architecture
+- `data.js` = empty template for new users (not personal data)
+- User data lives in Supabase (`mindmaps` table, one row per user)
+- Two input channels: browser edits save to Supabase, Claude edits via Supabase API
+- Service role key in `.env` (gitignored) for Claude API access
 
 ### File Structure
 ```
-index.html              ← HTML shell (< 60 lines)
+index.html              ← HTML shell with landing page + app container
 styles/
   base.css              ← reset, layout, canvas, controls, legend, toast
   nodes.css             ← node cards, status dots, toggle buttons
   modal.css             ← detail panel, rich editor, checklist, links, popover
   dark.css              ← dark mode overrides
+  landing.css           ← landing page + auth form styles
 js/
-  data.js               ← PROJECTS array, ROOT_LABEL, STATUS_LABELS
+  supabase.js           ← Supabase client, auth helpers (email sign in/up/out)
+  data.js               ← empty template for new users, ROOT_LABEL, STATUS_LABELS
   state.js              ← shared state object, undo stack, findNodeById
-  persistence.js        ← localStorage save/load, export, dark mode
+  persistence.js        ← localStorage + Supabase save/load, export, dark mode
   render.js             ← layout engine, two-pass rendering, edge drawing
   modal.js              ← detail panel, checklist, links, rich editor, drag reorder
   canvas.js             ← pan, zoom, node drag, keyboard shortcuts
-  app.js                ← init, wires modules together, exposes globals
+  app.js                ← async init, auth flow, wires modules together
+scripts/
+  sb-read.sh            ← Claude helper: read user data from Supabase
+  sb-write.sh           ← Claude helper: write user data to Supabase
 ```
 
 ### Module Dependency Graph
@@ -98,10 +112,9 @@ Bump `DATA_VERSION` every time you change the source data. On refresh, if the fi
 ## Deployment
 
 ```bash
-# Deploy to GitHub Pages (requires switching to ayming-france account)
-gh auth switch --user ayming-france
-git push deploy main
-gh auth switch --user xXencarvXx
+# Deploy to GitHub Pages (both repos on xXencarvXx)
+git push deploy auth:main    # pushes auth branch as main to mindmap-app
+git push origin auth          # backup source code to private repo
 ```
 
 ## Key Technical Patterns
