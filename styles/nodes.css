@@ -76,10 +76,12 @@
 
 /* Abandoned nodes: faded + strikethrough */
 .node.leaf[data-status="abandoned"] {
-  opacity: 0.45;
+  opacity: 0.4;
   border-style: dashed;
+  border-color: #d1d5db;
+  text-decoration: line-through;
+  text-decoration-color: #9ca3af;
 }
-.node.leaf[data-status="abandoned"] { text-decoration: line-through; }
 .status-dot.not_started { background: #9ca3af; box-shadow: 0 0 0 2px rgba(156,163,175,0.25); }
 
 /* Collapse toggle */
