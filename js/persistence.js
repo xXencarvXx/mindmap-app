@@ -5,7 +5,7 @@ import { positionOverrides } from './state.js';
 // LOCAL STORAGE
 // ──────────────────────────────────────────────
 const STORAGE_KEY = "mindmap-priorities-data";
-export const DATA_VERSION = 62;
+export const DATA_VERSION = 63;
 const VERSION_KEY = "mindmap-data-version";
 const DARK_KEY = "mindmap-dark-mode";
 
@@ -90,23 +90,33 @@ export function setSupabaseContext(mod, user) {
 
 // Debounced cloud save: waits 1.5s after last mutation, then upserts
 let _saveTimer = null;
+let _dirty = false;
+function _doSupabaseSave() {
+  if (!_supabaseModule || !_currentUser) return;
+  _dirty = false;
+  _supabaseModule.supabase.from('mindmaps').upsert({
+    user_id: _currentUser.id,
+    projects: PROJECTS.map(serializeNode),
+    positions: { ...positionOverrides },
+    updated_at: new Date().toISOString()
+  }).then(({ error }) => {
+    if (error) console.warn('Supabase save failed:', error.message);
+  }).catch(e => console.warn('Supabase save failed:', e));
+}
 function saveToSupabase() {
   if (!_supabaseModule || !_currentUser) return;
+  _dirty = true;
   clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(async () => {
-    try {
-      const { error } = await _supabaseModule.supabase.from('mindmaps').upsert({
-        user_id: _currentUser.id,
-        projects: PROJECTS.map(serializeNode),
-        positions: { ...positionOverrides },
-        updated_at: new Date().toISOString()
-      });
-      if (error) console.warn('Supabase save failed:', error.message);
-    } catch (e) {
-      console.warn('Supabase save failed:', e);
-    }
-  }, 1500);
+  _saveTimer = setTimeout(_doSupabaseSave, 1500);
 }
+
+// Flush pending save on page unload
+window.addEventListener('beforeunload', () => {
+  if (_dirty) {
+    clearTimeout(_saveTimer);
+    _doSupabaseSave();
+  }
+});
 
 export async function loadFromSupabase() {
   if (!_supabaseModule || !_currentUser) return false;
