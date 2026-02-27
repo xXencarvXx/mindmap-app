@@ -73,6 +73,13 @@
 .status-dot.in_progress { background: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.25); }
 .status-dot.blocked { background: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,0.25); }
 .status-dot.abandoned { background: #1e1e1e; box-shadow: 0 0 0 2px rgba(30,30,30,0.25); }
+
+/* Abandoned nodes: faded + strikethrough */
+.node.leaf[data-status="abandoned"] {
+  opacity: 0.45;
+  border-style: dashed;
+}
+.node.leaf[data-status="abandoned"] { text-decoration: line-through; }
 .status-dot.not_started { background: #9ca3af; box-shadow: 0 0 0 2px rgba(156,163,175,0.25); }
 
 /* Collapse toggle */
