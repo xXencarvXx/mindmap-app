@@ -41,6 +41,7 @@ export const STATUS_LABELS = {
   done: "Fait",
   in_progress: "En cours",
   blocked: "Bloqué",
+  abandoned: "Abandonné",
   not_started: "Pas commencé"
 };
 

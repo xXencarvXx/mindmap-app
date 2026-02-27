@@ -5,7 +5,7 @@ import { positionOverrides } from './state.js';
 // LOCAL STORAGE
 // ──────────────────────────────────────────────
 const STORAGE_KEY = "mindmap-priorities-data";
-export const DATA_VERSION = 60;
+export const DATA_VERSION = 61;
 const VERSION_KEY = "mindmap-data-version";
 const DARK_KEY = "mindmap-dark-mode";
 

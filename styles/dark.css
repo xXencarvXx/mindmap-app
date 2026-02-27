@@ -138,6 +138,7 @@ body.dark #detail-panel .blocker-box {
 body.dark .status-pill.done { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
 body.dark .status-pill.in_progress { background: #1e3a5f; color: #93c5fd; border-color: #1e40af; }
 body.dark .status-pill.blocked { background: #450a0a; color: #fca5a5; border-color: #7f1d1d; }
+body.dark .status-pill.abandoned { background: #18181b; color: #71717a; border-color: #27272a; }
 body.dark .status-pill.not_started { background: #1e293b; color: #94a3b8; border-color: #334155; }
 
 /* Status dropdown */

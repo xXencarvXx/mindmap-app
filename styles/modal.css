@@ -110,6 +110,8 @@
 .status-pill.in_progress .status-dot-pill { background: #2563eb; }
 .status-pill.blocked { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 .status-pill.blocked .status-dot-pill { background: #dc2626; }
+.status-pill.abandoned { background: #f3f3f3; color: #1e1e1e; border-color: #d1d1d1; }
+.status-pill.abandoned .status-dot-pill { background: #1e1e1e; }
 .status-pill.not_started { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
 .status-pill.not_started .status-dot-pill { background: #9ca3af; }
 
