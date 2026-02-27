@@ -5,7 +5,7 @@ import { positionOverrides } from './state.js';
 // LOCAL STORAGE
 // ──────────────────────────────────────────────
 const STORAGE_KEY = "mindmap-priorities-data";
-export const DATA_VERSION = 63;
+export const DATA_VERSION = 64;
 const VERSION_KEY = "mindmap-data-version";
 const DARK_KEY = "mindmap-dark-mode";
 
@@ -17,6 +17,7 @@ function serializeNode(n) {
     checklist: n.checklist || [], links: n.links || []
   };
   if (n.color) obj.color = n.color;
+  if (n.abandonedReason) obj.abandonedReason = n.abandonedReason;
   if (n.children) obj.children = n.children.map(c => serializeNode(c));
   return obj;
 }

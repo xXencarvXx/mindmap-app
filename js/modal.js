@@ -560,6 +560,11 @@ export function openPanel(node) {
     bodyHTML += `</div>`;
   }
 
+  if (node.status === 'abandoned' && hasContent(node.abandonedReason)) {
+    bodyHTML += `<div class="section-label" style="margin-top:16px;color:#1e1e1e;text-transform:none;">Raison d'abandon</div>`;
+    bodyHTML += `<div class="abandoned-box">${node.abandonedReason}</div>`;
+  }
+
   if (showBlockers) {
     bodyHTML += sectionHeaderHTML("Bloqueurs", "blockers");
     bodyHTML += richEditorHTML("field-blockers", "blocker-editor", "Aucun bloqueur", node.blockers || "");

@@ -179,6 +179,17 @@
   color: #1e40af;
   line-height: 1.5;
 }
+
+.abandoned-box {
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-left: 3px solid #1e1e1e;
+  border-radius: 0 8px 8px 0;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #27272a;
+  line-height: 1.5;
+}
 .prerequisites-box .prereq-text {
   flex: 1;
   min-width: 0;
