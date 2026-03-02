@@ -1,8 +1,8 @@
 import { PROJECTS } from './data.js';
 import { state, undoStack, positionUndoStack, positionOverrides, findNodeById, _nodeElements } from './state.js';
 import { loadFromLocalStorage, loadPositionsFromLocalStorage, loadFromSupabase, setSupabaseContext, loadDarkMode, saveToLocalStorage, savePositionsToLocalStorage, snapshotOriginal, exportDiff, toggleDarkMode, showToast } from './persistence.js';
-import { render, setOpenPanelFn } from './render.js';
-import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, initChecklistDrag } from './modal.js';
+import { render, setOpenPanelFn, setAddProjectFn } from './render.js';
+import { openPanel, closePanel, openPanelById, openLinkPopover, toggleChecklistItem, deleteChecklistItem, addChecklistItem, deleteLinkItem, addLinkItem, toggleLinkForm, removeSection, addSection, promptAddSubproject, deleteNode, addChildTo, promptAddProject, initChecklistDrag } from './modal.js';
 import { resetView, zoomIn, zoomOut, resetPositions, initKeyboard, panToNode } from './canvas.js';
 
 // ──────────────────────────────────────────────
@@ -19,6 +19,7 @@ function popUndo() {
     return true;
   }
   function restoreNode(snap, target) {
+    target.title = snap.title;
     target.status = snap.status;
     target.description = snap.description;
     target.prerequisites = snap.prerequisites;
@@ -26,25 +27,41 @@ function popUndo() {
     target.notes = snap.notes;
     target.checklist = snap.checklist;
     target.links = snap.links;
-    if (snap.children && target.children) {
+    if (snap.color !== undefined) target.color = snap.color;
+    if (snap.abandonedReason !== undefined) target.abandonedReason = snap.abandonedReason;
+    if (snap.children) {
+      if (!target.children) target.children = [];
       for (const sc of snap.children) {
         const tc = target.children.find(c => c.id === sc.id);
         if (tc) restoreNode(sc, tc);
       }
-      target.children = target.children.filter(c => snap.children.some(sc => sc.id === c.id));
+      // Rebuild in snapshot order: restored existing + re-added deleted
+      target.children = snap.children.map(sc =>
+        target.children.find(c => c.id === sc.id) || sc
+      );
+    } else {
+      delete target.children;
     }
   }
   if (undoStack.length === 0) return false;
   const snapshot = undoStack.pop();
+  // Restore existing projects and re-add deleted ones
   for (const sp of snapshot) {
     const target = PROJECTS.find(p => p.id === sp.id);
     if (target) restoreNode(sp, target);
+    else PROJECTS.push(sp);
   }
+  // Remove projects added after snapshot
+  for (let i = PROJECTS.length - 1; i >= 0; i--) {
+    if (!snapshot.some(sp => sp.id === PROJECTS[i].id)) PROJECTS.splice(i, 1);
+  }
+  state._cachedSides = null;
   saveToLocalStorage();
   render();
   if (state.currentPanelNodeId) {
     const n = findNodeById(state.currentPanelNodeId);
     if (n) openPanel(n);
+    else closePanel();
   }
   showToast("Annulé");
   return true;
@@ -54,6 +71,7 @@ function popUndo() {
 // WIRE UP: connect render.js to modal.js (avoid circular dep)
 // ──────────────────────────────────────────────
 setOpenPanelFn(openPanel);
+setAddProjectFn(promptAddProject);
 
 // ──────────────────────────────────────────────
 // EXPOSE GLOBALS (for inline onclick handlers in templates)
@@ -69,6 +87,9 @@ window.addSection = addSection;
 window.openPanelById = openPanelById;
 window.openLinkPopover = openLinkPopover;
 window.promptAddSubproject = promptAddSubproject;
+window.deleteNode = deleteNode;
+window.addChildTo = addChildTo;
+window.promptAddProject = promptAddProject;
 window.closePanel = closePanel;
 window.popUndo = popUndo;
 

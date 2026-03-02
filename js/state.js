@@ -33,7 +33,7 @@ export const undoStack = [];
 export const positionUndoStack = [];
 export const MAX_UNDO = 20;
 
-function cloneNode(n) {
+export function cloneNode(n) {
   const clone = {
     id: n.id, title: n.title, status: n.status,
     description: n.description, prerequisites: n.prerequisites || "",
@@ -42,6 +42,7 @@ function cloneNode(n) {
     links: (n.links || []).map(l => ({ ...l }))
   };
   if (n.color) clone.color = n.color;
+  if (n.abandonedReason) clone.abandonedReason = n.abandonedReason;
   if (n.children) clone.children = n.children.map(c => cloneNode(c));
   return clone;
 }
@@ -63,6 +64,26 @@ export function findNodeById(id) {
     for (const n of nodes) {
       if (n.id === id) return n;
       if (n.children) {
+        const found = search(n.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+  return search(PROJECTS);
+}
+
+// ──────────────────────────────────────────────
+// FIND PARENT OF NODE
+// ──────────────────────────────────────────────
+export function findParentOf(nodeId) {
+  const topIdx = PROJECTS.findIndex(p => p.id === nodeId);
+  if (topIdx !== -1) return { array: PROJECTS, index: topIdx, parentNode: null };
+  function search(nodes) {
+    for (const n of nodes) {
+      if (n.children) {
+        const idx = n.children.findIndex(c => c.id === nodeId);
+        if (idx !== -1) return { array: n.children, index: idx, parentNode: n };
         const found = search(n.children);
         if (found) return found;
       }

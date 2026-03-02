@@ -497,6 +497,82 @@
   color: #ef4444;
 }
 
+/* Editable panel title */
+#detail-panel .panel-title[contenteditable] {
+  outline: none;
+  border-bottom: 1.5px dashed transparent;
+  transition: border-color 0.15s;
+  cursor: text;
+}
+
+#detail-panel .panel-title[contenteditable]:focus {
+  border-bottom-color: #94a3b8;
+}
+
+/* Create project dialog */
+.project-name-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #1e293b;
+  background: white;
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.project-name-input:focus {
+  border-color: #3b82f6;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  outline: none;
+  padding: 0;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch.active {
+  border-color: #1e293b;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
+}
+
+/* Create button (reuse confirm-box layout) */
+.confirm-box .btn-create {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: #3b82f6;
+  color: white;
+}
+
+.confirm-box .btn-create:hover {
+  background: #2563eb;
+}
+
 .section-header .remove-section svg {
   width: 14px;
   height: 14px;

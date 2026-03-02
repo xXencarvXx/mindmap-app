@@ -23,17 +23,17 @@ Interactive priority mind map deployed to GitHub Pages.
 index.html              ← HTML shell with landing page + app container
 styles/
   base.css              ← reset, layout, canvas, controls, legend, toast
-  nodes.css             ← node cards, status dots, toggle buttons
+  nodes.css             ← node cards, status dots, toggle buttons, hover actions
   modal.css             ← detail panel, rich editor, checklist, links, popover
   dark.css              ← dark mode overrides
   landing.css           ← landing page + auth form styles
 js/
   supabase.js           ← Supabase client, auth helpers (email sign in/up/out)
   data.js               ← empty template for new users, ROOT_LABEL, STATUS_LABELS
-  state.js              ← shared state object, undo stack, findNodeById
+  state.js              ← shared state object, undo stack, findNodeById, findParentOf
   persistence.js        ← localStorage + Supabase save/load, export, dark mode
   render.js             ← layout engine, two-pass rendering, edge drawing
-  modal.js              ← detail panel, checklist, links, rich editor, drag reorder
+  modal.js              ← detail panel, checklist, links, rich editor, CRUD dialogs
   canvas.js             ← pan, zoom, node drag, keyboard shortcuts
   app.js                ← async init, auth flow, wires modules together
 scripts/
@@ -48,10 +48,13 @@ data.js ← state.js ← persistence.js
                     ← modal.js  ← canvas.js
                                 ← app.js (wires everything)
 ```
-`render.js` and `modal.js` avoid circular deps via `setOpenPanelFn()` callback.
+`render.js` and `modal.js` avoid circular deps via `setOpenPanelFn()` and `setAddProjectFn()` callbacks.
 Inline `onclick` handlers in template strings use `window.*` globals set by `app.js`.
 
 ## Rules
+
+### No Native Browser Dialogs
+Never use `prompt()`, `alert()`, or `confirm()`. Always use styled overlay dialogs (see `showConfirm()` and `showPrompt()` in modal.js). The app has its own dialog system with dark mode support.
 
 ### Node vs Checklist
 - **Node** = something your boss would ask "what's the status of X?"
@@ -98,14 +101,15 @@ Bump `DATA_VERSION` every time you change the source data. On refresh, if the fi
   id: "string",
   title: "string",
   color: "#hex",           // project-level only
-  status: "done|in_progress|blocked|not_started",
-  description: "string",
-  prerequisites: "string", // optional, auto-links node titles
-  blockers: "string",
-  notes: "string",
+  status: "done|in_progress|blocked|not_started|abandoned",
+  description: "html string",   // rich editor, use <br> and <b> not \n
+  prerequisites: "string",      // optional, auto-links node titles
+  blockers: "html string",      // rich editor
+  notes: "html string",         // rich editor
+  abandonedReason: "string",    // only when status is abandoned
   checklist: [{ text: "string", done: bool }],
   links: [{ url: "string", text: "string" }],
-  children: [/* sub-project objects */]  // project-level only
+  children: [/* sub-project objects, recursive */]
 }
 ```
 
@@ -125,3 +129,6 @@ git push origin auth          # backup source code to private repo
 - **Rich text editing** via `contenteditable` divs with `document.execCommand()`
 - **Link popover** as `position: fixed` centered modal on `document.body`
 - **Confirm dialog** styled (not browser `confirm()`), required when deleting sections with content
+- **Node CRUD via hover actions**: "+" and "×" circle buttons appear bottom-center on hover (Miro/FigJam pattern). `deleteNode(id)` and `addChildTo(id)` in modal.js, wired as `window.*` globals. Any node can become a parent by adding a child.
+- **Project creation**: Click root node to open color-picker dialog (`promptAddProject()`). 8 preset swatches, auto-selects first unused color.
+- **Inline rename**: Panel title is `contentEditable`, saves on blur/Enter

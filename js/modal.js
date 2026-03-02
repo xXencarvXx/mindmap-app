@@ -1,5 +1,5 @@
 import { PROJECTS, STATUS_LABELS } from './data.js';
-import { state, positionOverrides, findNodeById, pushUndo, escapeHtml } from './state.js';
+import { state, positionOverrides, findNodeById, findParentOf, pushUndo, escapeHtml } from './state.js';
 import { saveToLocalStorage, showToast } from './persistence.js';
 import { render } from './render.js';
 
@@ -227,6 +227,32 @@ function showConfirm(title, msg, onConfirm) {
   overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
 }
 
+function showPrompt(title, placeholder, onSubmit) {
+  const overlay = document.createElement("div");
+  overlay.className = "confirm-overlay";
+  overlay.innerHTML = `<div class="confirm-box">
+    <div class="confirm-title">${title}</div>
+    <input type="text" class="project-name-input" placeholder="${placeholder}" autofocus>
+    <div class="confirm-actions">
+      <button class="btn-cancel">Annuler</button>
+      <button class="btn-create">OK</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const input = overlay.querySelector(".project-name-input");
+  setTimeout(() => input.focus(), 50);
+  const submit = () => {
+    const val = input.value.trim();
+    if (!val) { input.focus(); return; }
+    overlay.remove();
+    onSubmit(val);
+  };
+  overlay.querySelector(".btn-cancel").onclick = () => overlay.remove();
+  overlay.querySelector(".btn-create").onclick = submit;
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); if (e.key === "Escape") overlay.remove(); });
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
+}
+
 // ──────────────────────────────────────────────
 // SECTION MANAGEMENT
 // ──────────────────────────────────────────────
@@ -446,29 +472,135 @@ export function initChecklistDrag() {
 // ADD SUB-PROJECT
 // ──────────────────────────────────────────────
 export function promptAddSubproject() {
-  const title = prompt("Nom du sous-projet :");
-  if (!title || !title.trim()) return;
-  const node = findNodeById(state.currentPanelNodeId);
-  if (!node) return;
-  pushUndo();
-  if (!node.children) node.children = [];
-  const id = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
-  node.children.push({
-    id: id + "-" + Date.now(),
-    title: title.trim(),
-    status: "not_started",
-    description: "",
-    blockers: "",
-    notes: "",
-    checklist: [],
-    links: []
+  const nodeId = state.currentPanelNodeId;
+  showPrompt("Nouveau sous-projet", "Nom du sous-projet", (title) => {
+    const node = findNodeById(nodeId);
+    if (!node) return;
+    pushUndo();
+    if (!node.children) node.children = [];
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "") + "-" + Date.now();
+    node.children.push({
+      id, title, status: "not_started",
+      description: "", blockers: "", notes: "",
+      checklist: [], links: []
+    });
+    state._cachedSides = null;
+    for (const key in positionOverrides) delete positionOverrides[key];
+    import('./persistence.js').then(m => m.savePositionsToLocalStorage());
+    saveToLocalStorage();
+    render();
+    openPanel(node);
   });
-  state._cachedSides = null;
-  for (const key in positionOverrides) delete positionOverrides[key];
-  import('./persistence.js').then(m => m.savePositionsToLocalStorage());
-  saveToLocalStorage();
-  render();
-  openPanel(node);
+}
+
+// ──────────────────────────────────────────────
+// DELETE NODE (works from canvas hover or panel)
+// ──────────────────────────────────────────────
+export function deleteNode(nodeId) {
+  const id = nodeId || state.currentPanelNodeId;
+  const node = findNodeById(id);
+  if (!node) return;
+  const info = findParentOf(id);
+  if (!info) return;
+  const childCount = node.children ? node.children.length : 0;
+  const msg = childCount > 0
+    ? `"${node.title}" et ses ${childCount} sous-projet${childCount > 1 ? "s" : ""} seront supprimés.`
+    : `"${node.title}" sera supprimé.`;
+  showConfirm("Supprimer ce noeud ?", msg, () => {
+    pushUndo();
+    info.array.splice(info.index, 1);
+    state._cachedSides = null;
+    for (const key in positionOverrides) delete positionOverrides[key];
+    import('./persistence.js').then(m => m.savePositionsToLocalStorage());
+    if (state.currentPanelNodeId === id) closePanel();
+    saveToLocalStorage();
+    render();
+    showToast("Noeud supprimé");
+  });
+}
+
+// ──────────────────────────────────────────────
+// ADD CHILD TO NODE (works from canvas hover)
+// ──────────────────────────────────────────────
+export function addChildTo(nodeId) {
+  showPrompt("Nouveau sous-projet", "Nom du sous-projet", (title) => {
+    const node = findNodeById(nodeId);
+    if (!node) return;
+    pushUndo();
+    if (!node.children) node.children = [];
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "") + "-" + Date.now();
+    node.children.push({
+      id, title, status: "not_started",
+      description: "", blockers: "", notes: "",
+      checklist: [], links: []
+    });
+    state._cachedSides = null;
+    for (const key in positionOverrides) delete positionOverrides[key];
+    import('./persistence.js').then(m => m.savePositionsToLocalStorage());
+    saveToLocalStorage();
+    render();
+  });
+}
+
+// ──────────────────────────────────────────────
+// ADD TOP-LEVEL PROJECT
+// ──────────────────────────────────────────────
+const PROJECT_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4", "#ec4899", "#84cc16"];
+
+export function promptAddProject() {
+  const overlay = document.createElement("div");
+  overlay.className = "confirm-overlay";
+  const usedColors = new Set(PROJECTS.map(p => p.color));
+  const defaultColor = PROJECT_COLORS.find(c => !usedColors.has(c)) || PROJECT_COLORS[0];
+  let selectedColor = defaultColor;
+  const swatches = PROJECT_COLORS.map(c =>
+    `<button class="color-swatch${c === selectedColor ? " active" : ""}" data-color="${c}" style="background:${c}"></button>`
+  ).join("");
+  overlay.innerHTML = `<div class="confirm-box">
+    <div class="confirm-title">Nouveau projet</div>
+    <input type="text" class="project-name-input" placeholder="Nom du projet" autofocus>
+    <div class="color-swatches">${swatches}</div>
+    <div class="confirm-actions">
+      <button class="btn-cancel">Annuler</button>
+      <button class="btn-create">Créer</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  const input = overlay.querySelector(".project-name-input");
+  setTimeout(() => input.focus(), 50);
+
+  overlay.querySelectorAll(".color-swatch").forEach(btn => {
+    btn.addEventListener("click", () => {
+      overlay.querySelector(".color-swatch.active")?.classList.remove("active");
+      btn.classList.add("active");
+      selectedColor = btn.dataset.color;
+    });
+  });
+
+  const doCreate = () => {
+    const title = input.value.trim();
+    if (!title) { input.focus(); return; }
+    overlay.remove();
+    pushUndo();
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "") + "-" + Date.now();
+    PROJECTS.push({
+      id, title, color: selectedColor, status: "not_started",
+      description: "", blockers: "", notes: "",
+      checklist: [], links: [], children: []
+    });
+    state._cachedSides = null;
+    for (const key in positionOverrides) delete positionOverrides[key];
+    import('./persistence.js').then(m => m.savePositionsToLocalStorage());
+    saveToLocalStorage();
+    render();
+    showToast("Projet créé");
+  };
+
+  overlay.querySelector(".btn-cancel").onclick = () => overlay.remove();
+  overlay.querySelector(".btn-create").onclick = doCreate;
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") doCreate(); });
+  overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
 }
 
 // ──────────────────────────────────────────────
@@ -482,7 +614,26 @@ export function openPanelById(id) {
 export function openPanel(node) {
   state.currentPanelNodeId = node.id;
   const panel = document.getElementById("detail-panel");
-  document.getElementById("panel-title").textContent = node.title;
+  const titleEl = document.getElementById("panel-title");
+  titleEl.textContent = node.title;
+  titleEl.contentEditable = "true";
+  titleEl.spellcheck = false;
+  titleEl._originalTitle = node.title;
+  titleEl.onblur = () => {
+    const newTitle = titleEl.textContent.trim();
+    if (newTitle && newTitle !== titleEl._originalTitle) {
+      pushUndo();
+      node.title = newTitle;
+      titleEl._originalTitle = newTitle;
+      saveToLocalStorage();
+      render();
+    } else if (!newTitle) {
+      titleEl.textContent = titleEl._originalTitle;
+    }
+  };
+  titleEl.onkeydown = (e) => {
+    if (e.key === "Enter") { e.preventDefault(); titleEl.blur(); }
+  };
 
   const STATUS_COLORS = { done: "#059669", in_progress: "#2563eb", blocked: "#dc2626", not_started: "#9ca3af" };
   const isProject = PROJECTS.some(p => p.id === node.id);
@@ -593,27 +744,24 @@ export function openPanel(node) {
   };
   bodyHTML += addBarHTML(addBarNode);
 
-  const hasChildren = node.children && node.children.length > 0;
-  const canAddChildren = isProject || hasChildren;
-  if (canAddChildren) {
-    const kids = node.children || [];
-    bodyHTML += `<div class="section-label" style="margin-top:20px;">Sous-projets${kids.length > 0 ? " (" + kids.length + ")" : ""}</div>`;
-    if (kids.length > 0) {
-      bodyHTML += `<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">`;
-      for (const child of kids) {
-        bodyHTML += `<div class="subproject-row" onclick="openPanelById('${child.id}')">`;
-        bodyHTML += `<span class="status-dot ${child.status}"></span>`;
-        bodyHTML += `<span>${escapeHtml(child.title)}</span>`;
-        bodyHTML += `</div>`;
-      }
+  // Sub-projects section (always available)
+  const kids = node.children || [];
+  bodyHTML += `<div class="section-label" style="margin-top:20px;">Sous-projets${kids.length > 0 ? " (" + kids.length + ")" : ""}</div>`;
+  if (kids.length > 0) {
+    bodyHTML += `<div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">`;
+    for (const child of kids) {
+      bodyHTML += `<div class="subproject-row" onclick="openPanelById('${child.id}')">`;
+      bodyHTML += `<span class="status-dot ${child.status}"></span>`;
+      bodyHTML += `<span>${escapeHtml(child.title)}</span>`;
       bodyHTML += `</div>`;
     }
-    bodyHTML += `<div style="margin-top:8px;">`;
-    bodyHTML += `<button class="add-subproject-btn" onclick="promptAddSubproject()">`;
-    bodyHTML += `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
-    bodyHTML += ` Ajouter un sous-projet</button>`;
     bodyHTML += `</div>`;
   }
+  bodyHTML += `<div style="margin-top:8px;">`;
+  bodyHTML += `<button class="add-subproject-btn" onclick="promptAddSubproject()">`;
+  bodyHTML += `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  bodyHTML += ` Ajouter un sous-projet</button>`;
+  bodyHTML += `</div>`;
 
   document.getElementById("panel-body").innerHTML = bodyHTML;
 

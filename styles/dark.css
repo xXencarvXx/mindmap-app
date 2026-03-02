@@ -58,6 +58,20 @@ body.dark svg.connections path { opacity: 0.45; }
 /* Toggle button */
 body.dark .toggle-btn { background: #1e293b; }
 
+/* Hover action buttons */
+body.dark .node-action {
+  background: #1e293b;
+  border-color: #475569;
+  color: #94a3b8;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+body.dark .node-action.add:hover { background: #064e3b; border-color: #10b981; color: #6ee7b7; }
+body.dark .node-action.delete:hover { background: #450a0a; border-color: #ef4444; color: #fca5a5; }
+body.dark .node.project .node-action,
+body.dark .node.root .node-action {
+  background: rgba(30,41,59,0.9);
+  border-color: rgba(255,255,255,0.2);
+}
 
 /* Legend */
 body.dark #legend {
@@ -284,3 +298,27 @@ body.dark #detail-panel select {
   color: #cbd5e1;
 }
 body.dark #detail-panel select:focus { border-color: #475569; }
+
+/* Editable title */
+body.dark #detail-panel .panel-title[contenteditable]:focus {
+  border-bottom-color: #475569;
+}
+
+/* Create project dialog inputs */
+body.dark .project-name-input {
+  border-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+body.dark .project-name-input:focus { border-color: #475569; }
+body.dark .project-name-input::placeholder { color: #475569; }
+
+/* Color swatches */
+body.dark .color-swatch.active {
+  border-color: #f1f5f9;
+  box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px currentColor;
+}
+
+/* Create button */
+body.dark .confirm-box .btn-create { background: #2563eb; }
+body.dark .confirm-box .btn-create:hover { background: #1d4ed8; }

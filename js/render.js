@@ -68,9 +68,11 @@ export function adjustColor(hex, amount) {
 // ──────────────────────────────────────────────
 const canvas = document.getElementById("canvas");
 
-// openPanel will be set by app.js to avoid circular dependency
+// Callbacks set by app.js to avoid circular dependency
 let _openPanelFn = null;
+let _addProjectFn = null;
 export function setOpenPanelFn(fn) { _openPanelFn = fn; }
+export function setAddProjectFn(fn) { _addProjectFn = fn; }
 
 export function render() {
   const { left, right, leftH, rightH } = balanceSides(PROJECTS);
@@ -95,11 +97,54 @@ export function render() {
     return el;
   }
 
+  function addNodeActions(el, nodeId, canDelete) {
+    const actions = document.createElement("div");
+    actions.className = "node-actions";
+    // Add child button
+    const addBtn = document.createElement("button");
+    addBtn.className = "node-action add";
+    addBtn.title = "Ajouter un sous-projet";
+    addBtn.innerHTML = "+";
+    addBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.addChildTo && window.addChildTo(nodeId);
+    });
+    actions.appendChild(addBtn);
+    // Delete button
+    if (canDelete) {
+      const delBtn = document.createElement("button");
+      delBtn.className = "node-action delete";
+      delBtn.title = "Supprimer";
+      delBtn.innerHTML = "\u00d7";
+      delBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        window.deleteNode && window.deleteNode(nodeId);
+      });
+      actions.appendChild(delBtn);
+    }
+    el.appendChild(actions);
+  }
+
   // ── PASS 1: Create all node DOM elements ──
 
   // Root node
   const rootEl = createNode("root", cx, cy, "root");
   rootEl.textContent = ROOT_LABEL;
+  rootEl.style.cursor = "pointer";
+  rootEl.addEventListener("click", () => _addProjectFn && _addProjectFn());
+  // Root gets a custom "+" that opens the project creation dialog
+  const rootActions = document.createElement("div");
+  rootActions.className = "node-actions";
+  const rootAddBtn = document.createElement("button");
+  rootAddBtn.className = "node-action add";
+  rootAddBtn.title = "Nouveau projet";
+  rootAddBtn.innerHTML = "+";
+  rootAddBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    _addProjectFn && _addProjectFn();
+  });
+  rootActions.appendChild(rootAddBtn);
+  rootEl.appendChild(rootActions);
   canvas.appendChild(rootEl);
   _nodeElements["root"] = { el: rootEl, side: null, cx: rootEl._cx, cy: rootEl._cy };
 
@@ -139,6 +184,7 @@ export function render() {
         cel.innerHTML = label;
       }
 
+      addNodeActions(cel, child.id, true);
       cel.addEventListener("click", () => _openPanelFn && _openPanelFn(child));
       canvas.appendChild(cel);
       _nodeElements[child.id] = { el: cel, side, cx: cel._cx, cy: cel._cy, parentColor: color };
@@ -188,6 +234,7 @@ export function render() {
         });
         el.appendChild(toggle);
       }
+      addNodeActions(el, project.id, true);
       el.addEventListener("click", () => _openPanelFn && _openPanelFn(project));
       canvas.appendChild(el);
       _nodeElements[project.id] = { el, side, cx: el._cx, cy: el._cy };
