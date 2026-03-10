@@ -7,28 +7,37 @@ import { savePositionsToLocalStorage } from './persistence.js';
 // ──────────────────────────────────────────────
 const NODE_H = 40;
 const LEAF_H = 36;
-const GAP_Y = 28;
+const BASE_GAP_Y = 28;
 const GAP_X_PROJECT = 220;
 const GAP_X_LEAF = 260;
 const PROJECT_GAP_Y = 70;
 
+// Dynamic vertical gap: more siblings → more breathing room
+function dynamicGapY(siblingCount) {
+  if (siblingCount <= 3) return BASE_GAP_Y;
+  // Scale from 28 up to 52 as siblings go from 4 to 10+
+  return Math.min(52, BASE_GAP_Y + (siblingCount - 3) * 4);
+}
+
 function leafHeight(node) {
   if (collapsedNodes.has(node.id) || !node.children || node.children.length === 0) return LEAF_H;
+  const gap = dynamicGapY(node.children.length);
   let h = LEAF_H + 10;
   for (const child of node.children) {
-    h += leafHeight(child) + GAP_Y;
+    h += leafHeight(child) + gap;
   }
-  return h - GAP_Y;
+  return h - gap;
 }
 
 function branchHeight(project) {
   const children = collapsedNodes.has(project.id) ? [] : (project.children || []);
   if (children.length === 0) return NODE_H;
+  const gap = dynamicGapY(children.length);
   let h = NODE_H + 20;
   for (const child of children) {
-    h += leafHeight(child) + GAP_Y;
+    h += leafHeight(child) + gap;
   }
-  return h - GAP_Y;
+  return h - gap;
 }
 
 function balanceSides(projects) {
@@ -150,6 +159,7 @@ export function render() {
 
   function renderChildren(children, parentId, parentX, startY, side, color, depth) {
     const xStep = GAP_X_LEAF * Math.max(0.7, 1 - depth * 0.1);
+    const gap = dynamicGapY(children.length);
     let childY = startY;
     for (const child of children) {
       const childX = side === "right" ? parentX + xStep : parentX - xStep;
@@ -194,7 +204,7 @@ export function render() {
         renderChildren(child.children, child.id, childX, childY + LEAF_H + 10, side, color, depth + 1);
       }
 
-      childY += lh + GAP_Y;
+      childY += lh + gap;
     }
   }
 
