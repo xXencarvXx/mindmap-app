@@ -314,6 +314,7 @@ export function toggleChecklistItem(idx) {
   n.checklist[idx].done = !n.checklist[idx].done;
   autoStatusFromChecklist(n);
   saveToLocalStorage();
+  render();
   openPanel(n);
 }
 
@@ -322,7 +323,9 @@ export function deleteChecklistItem(idx) {
   if (!n || !n.checklist) return;
   pushUndo();
   n.checklist.splice(idx, 1);
+  autoStatusFromChecklist(n);
   saveToLocalStorage();
+  render();
   openPanel(n);
 }
 
@@ -334,7 +337,9 @@ export function addChecklistItem(input) {
   pushUndo();
   if (!n.checklist) n.checklist = [];
   n.checklist.push({ text, done: false });
+  autoStatusFromChecklist(n);
   saveToLocalStorage();
+  render();
   openPanel(n);
 }
 
